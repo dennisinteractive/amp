@@ -48,3 +48,12 @@ function amp_requirements($phase) {
   }
   return $requirements;
 }
+
+/**
+ * Implements hook_uninstall().
+ */
+function amp_uninstall() {
+  // Delete variables.
+  variable_del('amp_url_mode');
+  variable_del('amp_url_prefix');
+}

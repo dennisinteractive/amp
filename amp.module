@@ -63,15 +63,6 @@ function amp_menu() {
     'file' => 'amp.admin.inc',
   );
 
-  if (variable_get('amp_url_mode', 'query') == 'path') {
-    $url_prefix = trim(variable_get('amp_url_prefix', '/amp'), '/') . '/%';
-    $items[$url_prefix] = array(
-      'delivery callback' => 'amp_url_prefix_callback',
-      'type' => MENU_CALLBACK,
-      'access arguments' => array('access content'),
-    );
-  }
-
   return $items;
 }
 
@@ -337,22 +328,6 @@ function amp_entity_info_alter(&$entity_info) {
 }
 
 /**
- * Menu callback for Url prefix.
- *
- * @param $arg
- */
-function amp_url_prefix_callback($arg = array()) {
-  if (variable_get('amp_url_mode', 'query') != 'path') {
-    return;
-  }
-  $url_prefix = trim(variable_get('amp_url_prefix', '/amp'), '/');
-  $path = ltrim(str_replace($url_prefix, '', current_path()), '/');
-  $normal_path = drupal_get_normal_path($path);
-
-  var_dump($normal_path);exit;
-}
-
-/**
  * Determines whether a request should return AMP HTML.
  */
 function amp_is_amp_request() {
@@ -361,8 +336,21 @@ function amp_is_amp_request() {
   if (!isset($result)) {
     $result = FALSE;
 
-    // The current request must have '?amp' in the query string.
-    if (isset($_GET['amp'])) {
+    if (variable_get('amp_url_mode', 'query') == 'path') {
+      // The current url starts with /amp
+      $url_prefix = trim(variable_get('amp_url_prefix', '/amp'), '/');
+      $path = ltrim(str_replace($url_prefix, '', current_path()), '/');
+      $normal_path = drupal_get_normal_path($path);
+      $parts = explode('/', $normal_path);
+      if ($parts[0] == 'node' && is_numeric($parts[1])) {
+        if ($node = node_load($parts[1])) {
+          menu_set_active_item($normal_path);
+          $result = TRUE;
+        }
+      }
+    }
+    else if (variable_get('amp_url_mode', 'query') != 'query' && isset($_GET['amp'])) {
+      // The current request must have '?amp' in the query string.
       // Ensure that there is a node loaded from the current request, and that
       // it is a node type which has the AMP view mode enabled.
       $node = menu_get_object();

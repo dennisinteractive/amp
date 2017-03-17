@@ -64,13 +64,12 @@ function amp_menu() {
   );
 
   if (variable_get('amp_url_mode', 'query') == 'path') {
-    $url_prefix = '/' . trim(variable_get('amp_url_prefix', '/amp'), '/') . '/%';
-    $items[$url_prefix] = [
+    $url_prefix = trim(variable_get('amp_url_prefix', '/amp'), '/') . '/%';
+    $items[$url_prefix] = array(
       'delivery callback' => 'amp_url_prefix_callback',
       'type' => MENU_CALLBACK,
-      'page arguments' => array(1),
-      'access arguments' => ['access content'],
-    ];
+      'access arguments' => array('access content'),
+    );
   }
 
   return $items;
@@ -342,8 +341,15 @@ function amp_entity_info_alter(&$entity_info) {
  *
  * @param $arg
  */
-function amp_url_prefix_callback($arg) {
-  var_dump($arg);exit;
+function amp_url_prefix_callback($arg = array()) {
+  if (variable_get('amp_url_mode', 'query') != 'path') {
+    return;
+  }
+  $url_prefix = trim(variable_get('amp_url_prefix', '/amp'), '/');
+  $path = ltrim(str_replace($url_prefix, '', current_path()), '/');
+  $normal_path = drupal_get_normal_path($path);
+
+  var_dump($normal_path);exit;
 }
 
 /**

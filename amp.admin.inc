@@ -42,6 +42,27 @@ function amp_admin_form($form, &$form_state) {
     );
   }
 
+  // AMP URL mode.
+  $form['amp_url_mode'] = array(
+    '#type' => 'radios',
+    '#title' => t('URL mode'),
+    '#default_value' => variable_get('amp_url_mode', 'query'),
+    '#options' => array('query' => 'Via query string i.e. ?amp', 'path' => 'By prefix i.e. /amp'),
+    '#description' => t('If you choose prefix, pages will be accessed via path i.e. /amp/foo-url. If you choose query string, the url will be /foo-url?amp.'),
+  );
+  $form['amp_url_prefix'] = array(
+    '#type' => 'textfield',
+    '#title' => t("Url prefix"),
+    '#size' => 10,
+    '#default_value' => variable_get('amp_url_prefix', '/amp'),
+    '#description' => t('The prefix to be used on AMP pages. For example, a page with Url /foo-url will be accessible via /amp/foo-url. You need to clear menu cache when changing this option.'),
+    '#states' => array(
+      'visible' => array(
+        'input[name="amp_url_mode"]' => array('value' => 'path'),
+      ),
+    ),
+  );
+
   // AMP theme settings.
   $form['amp_theme'] = array(
     '#type' => 'select',
@@ -174,14 +195,14 @@ function amp_admin_form($form, &$form_state) {
 /**
  * Submit handler for the amp_admin_form
  * Clears the Drupal cache if the AMP Library warnings display checkbox value is changed
- * 
+ *
  * @param type $form
  * @param type $form_state
  */
 function amp_admin_form_submit($form, &$form_state) {
   if (variable_get('amp_library_warnings_display', false) !== $form_state['values']['amp_library_warnings_display']) {
     cache_clear_all();
-    drupal_set_message(t('AMP Library debugging checkbox changed. Cleared cache.'));    
+    drupal_set_message(t('AMP Library debugging checkbox changed. Cleared cache.'));
   }
 }
 

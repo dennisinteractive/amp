@@ -62,6 +62,17 @@ function amp_menu() {
     'type' => MENU_LOCAL_TASK,
     'file' => 'amp.admin.inc',
   );
+
+  if (variable_get('amp_url_mode', 'query') == 'path') {
+    $url_prefix = '/' . trim(variable_get('amp_url_prefix', '/amp'), '/') . '/%';
+    $items[$url_prefix] = [
+      'delivery callback' => 'amp_url_prefix_callback',
+      'type' => MENU_CALLBACK,
+      'page arguments' => array(1),
+      'access arguments' => ['access content'],
+    ];
+  }
+
   return $items;
 }
 
@@ -324,6 +335,15 @@ function amp_entity_info_alter(&$entity_info) {
     'label' => t('AMP'),
     'custom settings' => FALSE,
   );
+}
+
+/**
+ * Menu callback for Url prefix.
+ *
+ * @param $arg
+ */
+function amp_url_prefix_callback($arg) {
+  var_dump($arg);exit;
 }
 
 /**

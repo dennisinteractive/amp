@@ -70,8 +70,10 @@ class AmpTestCase extends DrupalWebTestCase {
     // Configure AMP field formatters.
     $this->drupalGet('admin/structure/types/manage/article/display/amp');
     $this->assertResponse(200);
-    $edit = ["fields[field_image][type]" => 'amp_image'];
-    $edit = ["fields[body][type]" => 'amp_text'];
+    $edit = [
+      "fields[field_image][type]" => 'amp_image',
+      "fields[body][type]" => 'amp_text',
+    ];
     $this->drupalPost(NULL, $edit, t('Save'));
 
     // Check the warnfix messages.

@@ -328,6 +328,52 @@ function amp_entity_info_alter(&$entity_info) {
 }
 
 /**
+ * Helper to get the url prefix for the current url.
+ */
+function _amp_get_url_prefix() {
+  return trim(variable_get('amp_url_prefix', '/amp'), '/') . '/';
+}
+
+/**
+ * Helper to get the alias from the url.
+ */
+function _amp_get_alias_from_url($url) {
+  return substr_replace($url, '', 0, strlen(_amp_get_url_prefix()));
+}
+
+/**
+ * Helper to check if the content type is enabled to use AMP.
+ */
+function _amp_node_type_allowed($node) {
+  return ($node && in_array($node->type, amp_get_enabled_types()));
+}
+
+/**
+ * Implements hook_url_inbound_alter().
+ */
+function amp_url_inbound_alter(&$path, $original_path, $path_language) {
+  if (variable_get('amp_url_mode', 'query') == 'path') {
+    if (amp_is_amp_request()) {
+      $alias = _amp_get_alias_from_url($path);
+      // Look up the source.
+      if ($source = drupal_lookup_path('source', $alias, $path_language)) {
+        $parts = explode('/', $source);
+        // Load the node.
+        if ($parts[0] == 'node' && is_numeric($parts[1])) {
+          $node = node_load($parts[1]);
+          if (_amp_node_type_allowed($node)) {
+            // Update the path.
+            $path = $source;
+            // Set the active path.
+            menu_set_active_item($path);
+          }
+        }
+      }
+    }
+  }
+}
+
+/**
  * Determines whether a request should return AMP HTML.
  */
 function amp_is_amp_request() {
@@ -336,35 +382,33 @@ function amp_is_amp_request() {
   if (!isset($result)) {
     $result = FALSE;
 
-    if (variable_get('amp_url_mode', 'query') == 'path') {
-      // The current url starts with /amp
-      $url_prefix = trim(variable_get('amp_url_prefix', '/amp'), '/');
-      $path = ltrim(str_replace($url_prefix, '', current_path()), '/');
-      $normal_path = drupal_get_normal_path($path);
-      $parts = explode('/', $normal_path);
-      if ($parts[0] == 'node' && is_numeric($parts[1])) {
-        if ($node = node_load($parts[1])) {
-          menu_set_active_item($normal_path);
+    switch (variable_get('amp_url_mode', 'query')) {
+      case 'query':
+        // The current request must have '?amp' in the query string.
+        if (isset($_GET['amp'])) {
+          // Ensure that there is a node loaded from the current request, and that
+          // it is a node type which has the AMP view mode enabled.
+          $node = menu_get_object();
+          if (_amp_node_type_allowed($node)) {
+            // Do an additional check to ensure the current path is actually the
+            // node's public URI. Without this check, this function would return
+            // TRUE on the node's edit form.
+            $uri = entity_uri('node', $node);
+            if ($uri['path'] == current_path()) {
+              // Only if all of the above conditions are true is this a valid AMP
+              // request.
+              $result = TRUE;
+            }
+          }
+        }
+        break;
+
+      case 'path':
+        // The current url starts with /amp
+        if (strpos(current_path(), _amp_get_url_prefix()) === 0) {
           $result = TRUE;
         }
-      }
-    }
-    else if (variable_get('amp_url_mode', 'query') != 'query' && isset($_GET['amp'])) {
-      // The current request must have '?amp' in the query string.
-      // Ensure that there is a node loaded from the current request, and that
-      // it is a node type which has the AMP view mode enabled.
-      $node = menu_get_object();
-      if ($node && in_array($node->type, amp_get_enabled_types())) {
-        // Do an additional check to ensure the current path is actually the
-        // node's public URI. Without this check, this function would return
-        // TRUE on the node's edit form.
-        $uri = entity_uri('node', $node);
-        if ($uri['path'] == current_path()) {
-          // Only if all of the above conditions are true is this a valid AMP
-          // request.
-          $result = TRUE;
-        }
-      }
+        break;
     }
   }
 

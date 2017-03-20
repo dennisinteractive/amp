@@ -335,7 +335,7 @@ function _amp_get_url_prefix() {
 }
 
 /**
- * Helper to get the nid from the url i.e. node/1234.
+ * Helper to get the nid from the url.
  *
  * @param $amp_path
  * @param $language

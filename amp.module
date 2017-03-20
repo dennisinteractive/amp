@@ -335,10 +335,28 @@ function _amp_get_url_prefix() {
 }
 
 /**
- * Helper to get the alias from the url.
+ * Helper to get the source from the url i.e. node/1234.
+ *
+ * @param $amp_path
+ * @param $language
+ *
+ * @return mixed|void
  */
-function _amp_get_alias_from_url($url) {
-  return substr_replace($url, '', 0, strlen(_amp_get_url_prefix()));
+function _amp_get_nid_from_amp_path($amp_path, $language) {
+  // Remove amp prefix to get the requested path.
+  $path = substr_replace($amp_path, '', 0, strlen(_amp_get_url_prefix()));
+
+  // Check if we are on node/#.
+  $parts = explode('/', $path);
+  if (sizeof($parts) == 2  && $parts[0] == 'node' && is_numeric($parts[1])) {
+    return $parts[1];
+  }
+
+  // Look up the source.
+  if ($source = drupal_lookup_path('source', $path, $language)) {
+    $parts = explode('/', $source);
+    return $parts[1];
+  }
 }
 
 /**
@@ -354,22 +372,19 @@ function _amp_node_type_allowed($node) {
 function amp_url_inbound_alter(&$path, $original_path, $path_language) {
   if (variable_get('amp_url_mode', 'query') == 'path') {
     if (amp_is_amp_request()) {
-      $alias = _amp_get_alias_from_url($path);
       // Look up the source.
-      if ($source = drupal_lookup_path('source', $alias, $path_language)) {
-        $parts = explode('/', $source);
+      if ($nid = _amp_get_nid_from_amp_path($path, $path_language)) {
         // Load the node.
-        if ($parts[0] == 'node' && is_numeric($parts[1])) {
-          $node = node_load($parts[1]);
-          if (_amp_node_type_allowed($node)) {
-            // Update the path.
-            $path = $source;
-            // Set the active path.
-            menu_set_active_item($path);
-          }
+        $node = node_load($nid);
+        if (_amp_node_type_allowed($node)) {
+          // Update the path.
+          $path = 'node/' . $nid;
+          // Set the active path.
+          menu_set_active_item($path);
         }
       }
     }
+
   }
 }
 

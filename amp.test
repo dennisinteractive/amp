@@ -35,6 +35,12 @@ class AmpTestCase extends DrupalWebTestCase {
 
     // Install the AMP theme.
     theme_enable(array('amptheme', 'ampsubtheme_example'));
+
+    // Enable AMP display on article content.
+    $this->drupalGet("admin/structure/types/manage/article/display");
+    $this->assertResponse(200);
+    $edit = ["view_modes_custom[amp]" => '1'];
+    $this->drupalPost(NULL, $edit, t('Save'));
   }
 
   /**
@@ -48,12 +54,6 @@ class AmpTestCase extends DrupalWebTestCase {
 
     // Create a node to test AMP metadata.
     $node = $this->drupalCreateNode(array('type' => 'article'));
-
-    // Enable AMP display on article content.
-    $this->drupalGet("admin/structure/types/manage/article/display");
-    $this->assertResponse(200);
-    $edit = ["view_modes_custom[amp]" => '1'];
-    $this->drupalPost(NULL, $edit, t('Save'));
 
     // Check the full display.
     $this->drupalGet('node/' . $node->nid);
@@ -82,5 +82,33 @@ class AmpTestCase extends DrupalWebTestCase {
     $this->assertRaw('AMP-HTML Validation Issues and Fixes');
     $this->assertRaw('-------------------------------------');
     $this->assertRaw('PASS');
+  }
+
+  /**
+   * Test the url modes.
+   */
+  public function testAmpUrlModes() {
+    // Login as an admin user.
+    $this->drupalLogin($this->admin_user);
+
+    // Create a node to test the url detection.
+    $node = $this->drupalCreateNode(array('type' => 'article'));
+
+    // Test with query string ?amp
+    $this->drupalGet('admin/config/content/amp');
+    $this->assertResponse(200);
+    $this->assertRaw('Via query string i.e. ?amp');
+    $edit = ["amp_url_mode" => 'query'];
+    $this->drupalPost(NULL, $edit, t('Save configuration'));
+
+    // Check AMP page with query string ?amp.
+    $this->drupalGet('node/' . $node->nid, array('query' => array('amp' => NULL)));
+    $this->assertResponse(200);
+    $this->assertRaw('<html amp lang');
+
+    // Check AMP page with path /amp.
+    $this->drupalGet('node/' . $node->nid, array('query' => array('amp' => NULL)));
+    $this->assertResponse(200);
+    $this->assertRaw('<html amp lang');
   }
 }

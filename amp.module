@@ -335,12 +335,12 @@ function _amp_get_url_prefix() {
 }
 
 /**
- * Helper to get the source from the url i.e. node/1234.
+ * Helper to get the nid from the url i.e. node/1234.
  *
  * @param $amp_path
  * @param $language
  *
- * @return mixed|void
+ * @return mixed
  */
 function _amp_get_nid_from_amp_path($amp_path, $language = NULL) {
   // Remove amp prefix to get the requested path.

@@ -17,20 +17,16 @@ class AmpTestCase extends DrupalWebTestCase {
   }
 
   protected function setUp() {
-    // Enable AMP module.
-    parent::setUp('field_ui', 'path', 'amp', 'composer_manager');
+    // Enable modules.
+    parent::setUp('field_ui', 'amp', 'composer_manager');
 
     // Create Admin user.
     $this->admin_user = $this->drupalCreateUser(array(
-        'access content',
-        'create url aliases',
         'access administration pages',
-        'administer site configuration',
         'administer content types',
-        'administer nodes',
+        'administer site configuration',
         'administer fields',
         'create article content',
-        'edit any article content',
       )
     );
     $this->drupalLogin($this->admin_user);
@@ -85,11 +81,50 @@ class AmpTestCase extends DrupalWebTestCase {
     $this->assertRaw('-------------------------------------');
     $this->assertRaw('PASS');
   }
+}
+
+class AmpTestUrlFormats extends DrupalWebTestCase {
+  protected $admin_user;
+
+  public static function getInfo() {
+    return array(
+      'name' => 'AMP Url formats',
+      'description' => 'Tests AMP pages using prefix /amp and query string ?amp.',
+      'group' => 'AMP',
+    );
+  }
+
+  protected function setUp() {
+    // Enable modules.
+    parent::setUp('field_ui', 'path', 'amp', 'composer_manager');
+
+    // Create Admin user.
+    $this->admin_user = $this->drupalCreateUser(array(
+        'create url aliases',
+        'access administration pages',
+        'administer site configuration',
+        'administer content types',
+        'administer fields',
+        'create article content',
+        'edit any article content',
+      )
+    );
+    $this->drupalLogin($this->admin_user);
+
+    // Install the AMP theme.
+    theme_enable(array('amptheme', 'ampsubtheme_example'));
+
+    // Enable AMP display on article content.
+    $this->drupalGet("admin/structure/types/manage/article/display");
+    $this->assertResponse(200);
+    $edit = ["view_modes_custom[amp]" => '1'];
+    $this->drupalPost(NULL, $edit, t('Save'));
+  }
 
   /**
    * Test the url with query string ?amp.
    */
-  public function testAmpUrlQueryString() {
+  public function testAmpUrlFormatQueryString() {
     // Login as an admin user.
     $this->drupalLogin($this->admin_user);
 
@@ -125,18 +160,22 @@ class AmpTestCase extends DrupalWebTestCase {
   }
 
   /**
-   * Test the url with path /testamp.
+   * Test the url with prefix /testamp.
    */
-  public function testAmpUrlPath() {
+  public function testAmpUrlFormatPrefix() {
     // Login as an admin user.
     $this->drupalLogin($this->admin_user);
 
-    // Test with query string ?amp
+    // Test with query string /amp
     $this->drupalGet('admin/config/content/amp');
     $this->assertResponse(200);
     $this->assertRaw('Path prefix i.e. /amp');
-    $edit = ["amp_url_format" => 'prefix'];
+    $edit = [
+      'amp_url_format' => 'prefix',
+      'amp_path_prefix' => 'amptest'
+    ];
     $this->drupalPost(NULL, $edit, t('Save configuration'));
+    menu_cache_clear_all();
 
     // Create a node to test the url detection.
     $this->drupalGet('node/add/article');
@@ -148,17 +187,19 @@ class AmpTestCase extends DrupalWebTestCase {
     ];
     $this->drupalPost(NULL, $edit, t('Save'));
 
-    // Check AMP page with path /amp should 404.
-    $this->drupalGet('amp/foo');
-    $this->assertResponse(404);
-
-    // Check AMP page with query string ?amp.
-    $this->drupalGet('foo', array('query' => array('amp' => NULL)));
+    // Check AMP page with path /amp should work.
+    $this->drupalGet('amptest/foo');
     $this->assertResponse(200);
     $this->assertRaw('<html amp lang');
 
-    // Check admin UI is not an amp page.
-    $this->drupalGet('node/1/edit', array('query' => array('amp' => NULL)));
+    // Check AMP page with query string ?amp should show a normal page.
+    $this->drupalGet('foo', array('query' => array('amp' => NULL)));
+    $this->assertResponse(200);
+    $this->assertNoRaw('<html amp lang');
+
+    // This should show a normal page.
+    $this->drupalGet('foo');
+    $this->assertResponse(200);
     $this->assertNoRaw('<html amp lang');
   }
 }

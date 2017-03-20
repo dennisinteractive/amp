@@ -43,22 +43,22 @@ function amp_admin_form($form, &$form_state) {
   }
 
   // AMP URL mode.
-  $form['amp_url_mode'] = array(
+  $form['amp_url_format'] = array(
     '#type' => 'radios',
-    '#title' => t('URL mode'),
-    '#default_value' => variable_get('amp_url_mode', 'query'),
-    '#options' => array('query' => 'Via query string i.e. ?amp', 'path' => 'By prefix i.e. /amp'),
-    '#description' => t('If you choose prefix, pages will be accessed via path i.e. /amp/foo-url. If you choose query string, the url will be /foo-url?amp.'),
+    '#title' => t('URL format'),
+    '#default_value' => variable_get('amp_url_format', 'query_string'),
+    '#options' => array('query_string' => 'Query string i.e. ?amp', 'prefix' => 'Path prefix i.e. /amp'),
+    '#description' => t('If you choose path prefix, pages will be accessed via /[path_prefix]/foo-url. If you choose query string, the url will be /foo-url?amp.'),
   );
-  $form['amp_url_prefix'] = array(
+  $form['amp_path_prefix'] = array(
     '#type' => 'textfield',
     '#title' => t("Url prefix"),
     '#size' => 10,
-    '#default_value' => variable_get('amp_url_prefix', '/amp'),
+    '#default_value' => variable_get('amp_path_prefix', '/amp'),
     '#description' => t('The prefix to be used on AMP pages. For example, a page with Url /foo-url will be accessible via /amp/foo-url. You need to clear menu cache when changing this option.'),
     '#states' => array(
       'visible' => array(
-        'input[name="amp_url_mode"]' => array('value' => 'path'),
+        'input[name="amp_url_format"]' => array('value' => 'prefix'),
       ),
     ),
   );

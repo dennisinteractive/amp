@@ -331,7 +331,7 @@ function amp_entity_info_alter(&$entity_info) {
  * Helper to get the url prefix for the current url.
  */
 function _amp_get_url_prefix() {
-  return trim(variable_get('amp_url_prefix', '/amp'), '/') . '/';
+  return trim(variable_get('amp_path_prefix', '/amp'), '/') . '/';
 }
 
 /**
@@ -370,7 +370,7 @@ function _amp_node_type_allowed($node) {
  * Implements hook_url_inbound_alter().
  */
 function amp_url_inbound_alter(&$path, $original_path, $path_language) {
-  if (variable_get('amp_url_mode', 'query') == 'path') {
+  if (variable_get('amp_url_format', 'query_string') == 'prefix') {
     if (amp_is_amp_request() && $nid = _amp_get_nid_from_amp_path($path, $path_language)) {
       // Update the path.
       $path = 'node/' . $nid;
@@ -389,8 +389,8 @@ function amp_is_amp_request() {
   if (!isset($result)) {
     $result = FALSE;
 
-    switch (variable_get('amp_url_mode', 'query')) {
-      case 'query':
+    switch (variable_get('amp_url_format', 'query_string')) {
+      case 'query_string':
         // The current request must have '?amp' in the query string.
         if (isset($_GET['amp'])) {
           // Ensure that there is no amp page for admin urls.
@@ -400,7 +400,7 @@ function amp_is_amp_request() {
         }
         break;
 
-      case 'path':
+      case 'prefix':
         // The current url starts with /amp
         $is_amp_path = strpos(current_path(), _amp_get_url_prefix()) === 0;
         if ($is_amp_path && $nid = _amp_get_nid_from_amp_path(current_path())) {

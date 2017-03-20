@@ -18,17 +18,19 @@ class AmpTestCase extends DrupalWebTestCase {
 
   protected function setUp() {
     // Enable AMP module.
-    parent::setUp('field_ui', 'amp', 'composer_manager');
+    parent::setUp('field_ui', 'path', 'amp', 'composer_manager');
 
     // Create Admin user.
     $this->admin_user = $this->drupalCreateUser(array(
         'access content',
+        'create url aliases',
         'access administration pages',
         'administer site configuration',
         'administer content types',
         'administer nodes',
         'administer fields',
         'create article content',
+        'edit any article content',
       )
     );
     $this->drupalLogin($this->admin_user);
@@ -85,30 +87,78 @@ class AmpTestCase extends DrupalWebTestCase {
   }
 
   /**
-   * Test the url modes.
+   * Test the url with query string ?amp.
    */
-  public function testAmpUrlModes() {
+  public function testAmpUrlQueryString() {
     // Login as an admin user.
     $this->drupalLogin($this->admin_user);
-
-    // Create a node to test the url detection.
-    $node = $this->drupalCreateNode(array('type' => 'article'));
 
     // Test with query string ?amp
     $this->drupalGet('admin/config/content/amp');
     $this->assertResponse(200);
-    $this->assertRaw('Via query string i.e. ?amp');
-    $edit = ["amp_url_mode" => 'query'];
+    $this->assertRaw('Query string i.e. ?amp');
+    $edit = ["amp_url_format" => 'query_string'];
     $this->drupalPost(NULL, $edit, t('Save configuration'));
 
+    // Create a node to test the url detection.
+    $this->drupalGet('node/add/article');
+    $this->assertResponse(200);
+    $edit = [
+      "title" => 'AMP Page foo test',
+      "body[und][0][value]" => 'Foo',
+      "path[alias]" => 'foo',
+    ];
+    $this->drupalPost(NULL, $edit, t('Save'));
+
+    // Check AMP page with path /amp should 404.
+    $this->drupalGet('amp/foo');
+    $this->assertResponse(404);
+
     // Check AMP page with query string ?amp.
-    $this->drupalGet('node/' . $node->nid, array('query' => array('amp' => NULL)));
+    $this->drupalGet('foo', array('query' => array('amp' => NULL)));
     $this->assertResponse(200);
     $this->assertRaw('<html amp lang');
 
-    // Check AMP page with path /amp.
-    $this->drupalGet('node/' . $node->nid, array('query' => array('amp' => NULL)));
+    // Check admin UI is not an amp page.
+    $this->drupalGet('node/1/edit', array('query' => array('amp' => NULL)));
+    $this->assertNoRaw('<html amp lang');
+  }
+
+  /**
+   * Test the url with path /testamp.
+   */
+  public function testAmpUrlPath() {
+    // Login as an admin user.
+    $this->drupalLogin($this->admin_user);
+
+    // Test with query string ?amp
+    $this->drupalGet('admin/config/content/amp');
+    $this->assertResponse(200);
+    $this->assertRaw('Path prefix i.e. /amp');
+    $edit = ["amp_url_format" => 'prefix'];
+    $this->drupalPost(NULL, $edit, t('Save configuration'));
+
+    // Create a node to test the url detection.
+    $this->drupalGet('node/add/article');
+    $this->assertResponse(200);
+    $edit = [
+      "title" => 'AMP Page foo test',
+      "body[und][0][value]" => 'Foo',
+      "path[alias]" => 'foo',
+    ];
+    $this->drupalPost(NULL, $edit, t('Save'));
+
+    // Check AMP page with path /amp should 404.
+    $this->drupalGet('amp/foo');
+    $this->assertResponse(404);
+
+    // Check AMP page with query string ?amp.
+    $this->drupalGet('foo', array('query' => array('amp' => NULL)));
     $this->assertResponse(200);
     $this->assertRaw('<html amp lang');
+
+    // Check admin UI is not an amp page.
+    $this->drupalGet('node/1/edit', array('query' => array('amp' => NULL)));
+    $this->assertNoRaw('<html amp lang');
   }
 }

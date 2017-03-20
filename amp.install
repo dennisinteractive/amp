@@ -54,6 +54,6 @@ function amp_requirements($phase) {
  */
 function amp_uninstall() {
   // Delete variables.
-  variable_del('amp_url_mode');
+  variable_del('amp_url_format');
   variable_del('amp_url_prefix');
 }

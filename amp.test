@@ -6,6 +6,7 @@
  */
 
 class AmpTestCase extends DrupalWebTestCase {
+  protected $admin_user;
 
   public static function getInfo() {
     return array(
@@ -17,7 +18,21 @@ class AmpTestCase extends DrupalWebTestCase {
 
   protected function setUp() {
     // Enable AMP module.
-    parent::setUp('amp', 'composer_manager');
+    parent::setUp('field_ui', 'amp', 'composer_manager');
+
+    // Create Admin user.
+    $this->admin_user = $this->drupalCreateUser(array(
+        'access content',
+        'access administration pages',
+        'administer site configuration',
+        'administer content types',
+        'administer nodes',
+        'administer fields',
+        'create article content',
+      )
+    );
+    $this->drupalLogin($this->admin_user);
+
     // Install the AMP theme.
     theme_enable(array('amptheme', 'ampsubtheme_example'));
   }
@@ -29,8 +44,7 @@ class AmpTestCase extends DrupalWebTestCase {
     global $base_url;
 
     // Login as an admin user.
-    $admin_user = $this->drupalCreateUser(array('administer content types'));
-    $this->drupalLogin($admin_user);
+    $this->drupalLogin($this->admin_user);
 
     // Create a node to test AMP metadata.
     $node = $this->drupalCreateNode(array('type' => 'article'));

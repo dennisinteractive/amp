@@ -43,14 +43,18 @@ function amp_admin_form($form, &$form_state) {
   }
 
   // AMP URL mode.
-  $form['amp_url_format'] = array(
+  $form['amp_url'] = array(
+    '#type' => 'fieldset',
+    '#title' => t('URL options'),
+  );
+  $form['amp_url']['amp_url_format'] = array(
     '#type' => 'radios',
     '#title' => t('URL format'),
     '#default_value' => variable_get('amp_url_format', 'query_string'),
     '#options' => array('query_string' => 'Query string i.e. ?amp', 'prefix' => 'Path prefix i.e. /amp'),
     '#description' => t('If you choose path prefix, pages will be accessed via /[path_prefix]/foo-url. If you choose query string, the url will be /foo-url?amp.'),
   );
-  $form['amp_path_prefix'] = array(
+  $form['amp_url']['amp_path_prefix'] = array(
     '#type' => 'textfield',
     '#title' => t("Url prefix"),
     '#size' => 10,

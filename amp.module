@@ -6,6 +6,7 @@
  */
 
 require_once dirname(__FILE__).'/amp.admin.inc';
+require_once dirname(__FILE__) . '/inc/amp.db.inc';
 
 use Lullabot\AMP\AMP;
 use Lullabot\AMP\Validate\Scope;
@@ -341,14 +342,17 @@ function amp_is_amp_request() {
       // it is a node type which has the AMP view mode enabled.
       $node = menu_get_object();
       if ($node && in_array($node->type, amp_get_enabled_types())) {
-        // Do an additional check to ensure the current path is actually the
-        // node's public URI. Without this check, this function would return
-        // TRUE on the node's edit form.
-        $uri = entity_uri('node', $node);
-        if ($uri['path'] == current_path()) {
-          // Only if all of the above conditions are true is this a valid AMP
-          // request.
-          $result = TRUE;
+        // Node level check.
+        if (amp_node_is_enabled($node->nid)) {
+          // Do an additional check to ensure the current path is actually the
+          // node's public URI. Without this check, this function would return
+          // TRUE on the node's edit form.
+          $uri = entity_uri('node', $node);
+          if ($uri['path'] == current_path()) {
+            // Only if all of the above conditions are true is this a valid AMP
+            // request.
+            $result = TRUE;
+          }
         }
       }
     }
@@ -361,15 +365,9 @@ function amp_is_amp_request() {
  * Implements hook_custom_theme().
  */
 function amp_custom_theme() {
-   $node = menu_get_object();
-
-   if (amp_is_amp_request()) {
-     // Performance note: Just load this file when we know is an AMP request.
-     module_load_include('inc', 'amp', 'inc/amp.db');
-     if (amp_node_is_enabled($node->nid)) {
-       return variable_get('amp_theme', 'ampsubtheme_example');
-     }
-   }
+  if (amp_is_amp_request()) {
+    return variable_get('amp_theme', 'ampsubtheme_example');
+  }
 }
 
 /**
@@ -379,12 +377,7 @@ function amp_custom_theme() {
  */
 function amp_entity_view_mode_alter(&$view_mode, $context) {
   if ($view_mode === 'full' && amp_is_amp_request()) {
-    // Performance note: Just load this file when we know is an AMP request.
-    module_load_include('inc', 'amp', 'inc/amp.db');
-    $node = menu_get_object();
-    if (amp_node_is_enabled($node->nid)) {
-      $view_mode = 'amp';
-    }
+    $view_mode = 'amp';
   }
 }
 
@@ -399,7 +392,7 @@ function amp_form_node_form_alter(&$form, &$form_state, $form_id) {
     $form['actions']['save_view_amp'] = array(
       '#type' => 'submit',
       '#value' => t('Save and view AMP page'),
-      '#submit' => array('node_form_submit', 'amp_node_form_submit'),
+      '#submit' => array('node_form_submit', 'amp_node_enabled_form_submit', 'amp_node_form_submit'),
       '#weight' => 12,
       '#access' => TRUE,
     );
@@ -407,42 +400,42 @@ function amp_form_node_form_alter(&$form, &$form_state, $form_id) {
     $form['actions']['save_view_amp_warnfix'] = array(
         '#type' => 'submit',
         '#value' => t('Save and view AMP page and see any AMP formatter warnings'),
-        '#submit' => array('node_form_submit', 'amp_node_form_submit_warnfix'),
+        '#submit' => array('node_form_submit', 'amp_node_enabled_form_submit', 'amp_node_form_submit_warnfix'),
         '#weight' => 13,
         '#access' => TRUE,
     );
 
-    module_load_include('inc', 'amp', 'inc/amp.db');
-    // Disable amp checkbox.
+    // Option to disable AMP.
+    // When adding new nodes, AMP will be turned on by default.
+    $amp_enabled = 1;
+    // If we are editing an existing node, get the value from database.
+    if (isset($form_state['node']->nid) && !amp_db_is_node_enabled($form_state['node']->nid)) {
+      $amp_enabled = 0;
+    }
     $form['options']['amp_enabled'] = array(
       '#title' => t('Published (AMP)'),
       '#type' => 'checkbox',
-      // if AMP_disabled == TRUE, means AMP is enabled, or AMP_enabled == FALSE;
-      '#default_value' => amp_node_is_enabled($form_state['node']->nid),
+      '#default_value' => $amp_enabled,
     );
 
-    $form['actions']['submit']['#submit'][] = 'amp_form_submit';
+    // Form callback for node enabled.
+    $form['actions']['submit']['#submit'][] = 'amp_node_enabled_form_submit';
   }
 }
 
 /**
- * Implements amp_form_submit.
+ * Form callback to save the enabled status.
  */
-function amp_form_submit($form, &$form_state) {
-  module_load_include('inc', 'amp', 'inc/amp.db');
-  if ($form_state['values']['amp_enabled'] == 0) {
-    amp_db_disable_amp($form_state['nid']);
-    amp_clear_cache($form_state['nid']);
-  }
-  elseif ($form_state['values']['amp_enabled'] == 1 && !amp_node_is_enabled($form_state['nid'])) {
-    // If the form says enable, and it was disabled, enable it back.
-    try {
-      amp_db_enable_amp($form_state['nid']);
-      amp_clear_cache($form_state['nid']);
+function amp_node_enabled_form_submit(&$form, $form_state) {
+  if (isset($form_state['node']->nid)) {
+    $node_id = $form_state['node']->nid;
+    if ($form_state['values']['amp_enabled'] == 1) {
+      amp_db_enable_amp($node_id);
     }
-    catch (Exception $ex) {
-      watchdog('amp', "DB Exception: We couldn't disable the AMP version of the node");
+    else {
+      amp_db_disable_amp($node_id);
     }
+    amp_clear_cache($node_id);
   }
 }
 
@@ -688,15 +681,16 @@ function amp_page_alter(array &$page) {
  * Implements hook_node_view().
  */
 function amp_node_view($node, $view_mode, $langcode) {
+  if (amp_is_amp_request()) {
+    return;
+  }
+
   // Show amphtml links on AMP-enabled nodes so search engines can find AMP.
   if ($view_mode == 'full' && node_is_page($node) && in_array($node->type, amp_get_enabled_types())) {
-    module_load_include('inc', 'amp', 'inc/amp.db');
-    if (amp_node_is_enabled($node->nid)) {
-      $uri = entity_uri('node', $node);
-      $uri['options']['query']['amp'] = NULL;
-      $uri['options']['absolute'] = TRUE;
-      drupal_add_html_head_link(array('rel' => 'amphtml', 'href' => url($uri['path'], $uri['options'])), TRUE);
-    }
+    $uri = entity_uri('node', $node);
+    $uri['options']['query']['amp'] = NULL;
+    $uri['options']['absolute'] = TRUE;
+    drupal_add_html_head_link(array('rel' => 'amphtml', 'href' => url($uri['path'], $uri['options'])), TRUE);
   }
 
   // Add AMP metadata.
@@ -1491,11 +1485,7 @@ function amp_deliver_html_page($page_callback_result) {
  */
 function amp_page_delivery_callback_alter(&$deliver_callback) {
   if (amp_is_amp_request()) {
-    $node = menu_get_object();
-    module_load_include('inc', 'amp', 'inc/amp.db');
-    if (amp_node_is_enabled($node->nid)) {
-      $deliver_callback = 'amp_deliver_html_page';
-    }
+    $deliver_callback = 'amp_deliver_html_page';
   }
 }
 
@@ -1505,7 +1495,6 @@ function amp_page_delivery_callback_alter(&$deliver_callback) {
 function amp_node_delete($node) {
   if (in_array($node->type, amp_get_enabled_types())) {
     // We don't need the amp table for this node if it gets removed.
-    module_load_include('inc', 'amp', 'inc/amp.db');
     amp_db_remove($node->nid);
     amp_clear_cache($node->nid);
   }
@@ -1519,31 +1508,30 @@ function amp_node_delete($node) {
  */
 function amp_clear_cache($id) {
   // Clear bins as we have fresh data.
-  cache_clear_all('amp:node_enabled:' . $id, 'cache_amp');
+  cache_clear_all('amp:node_enabled:' . $id, 'cache');
 }
 
 /**
  * Get if the node is enabled.
  *
- * @param $nodeid
+ * @param $node_id
  *   Node id to check.
  *
  * @return bool
  *   TRUE if enabled, FALSE otherwise.
  */
-function amp_node_is_enabled($nodeid, $cache_override = FALSE) {
+function amp_node_is_enabled($node_id, $cache_override = FALSE) {
   // Setup a cache ID
-  $cid = 'amp:node_enabled:' . $nodeid;
+  $cid = 'amp:node_enabled:' . $node_id;
 
   // If a cached entry exists, return it
-  if ($cached = cache_get($cid) && $cache_override != TRUE) {
-    $is_enabled = $cached->data;
+  if (($cache = cache_get($cid, 'cache')) && $cache_override != TRUE) {
+    $is_enabled = $cache->data;
   }
   else {
-    $is_enabled = amp_db_is_node_enabled($nodeid);
-
+    $is_enabled = amp_db_is_node_enabled($node_id);
     // Cache the result.
-    cache_set($cid, $is_enabled, 'cache_amp');
+    cache_set($cid, $is_enabled, 'cache');
   }
 
   return $is_enabled;

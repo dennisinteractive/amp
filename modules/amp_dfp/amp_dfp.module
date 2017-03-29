@@ -36,41 +36,48 @@ function amp_dfp_theme($existing, $type, $theme, $path) {
  * Implements hook_preprocess_amp_dfp_tag().
  */
 function amp_dfp_preprocess_amp_dfp_tag(&$variables) {
-  $size = _amp_dfp_get_amp_size($variables['tag']);
-  if (empty($size)) {
-    // Provide a default if there is a problem, so validation does not break.
-    $variables['width'] = $variables['height'] = 1;
-  } else {
-    $variables['width'] = $size['width'];
-    $variables['height'] = $size['height'];
+  if (amp_is_amp_request()) {
+    // Performance note: Just load this file when we know is an AMP request.
+    module_load_include('inc', 'amp', 'inc/amp.db');
+    $node = menu_get_object();
+    if (amp_node_is_enabled($node->nid)) {
+      $size = _amp_dfp_get_amp_size($variables['tag']);
+      if (empty($size)) {
+        // Provide a default if there is a problem, so validation does not break.
+        $variables['width'] = $variables['height'] = 1;
+      } else {
+        $variables['width'] = $size['width'];
+        $variables['height'] = $size['height'];
+      }
+
+      $tag = _dfp_prepare_adunit($variables['tag']);
+      $tag->adunit = _dfp_clean_adunit(token_replace('[dfp_tag:network_id]/' . $tag->adunit, _dfp_prepare_tokens($tag), array('sanitize' => TRUE, 'clear' => TRUE)));
+
+      // We add global targeting to each dfp tag to simplify implementation.
+      $global_targeting = variable_get('dfp_targeting', array());
+      drupal_alter('dfp_global_targeting', $global_targeting);
+      $tag->global_targeting = $global_targeting;
+
+      $variables['slot'] = $tag->adunit;
+
+      // Prepare targeting arrays for JSON formatting
+      $targeting = array();
+      foreach ($tag->targeting as $target) {
+        $targeting[$target['target']] = token_replace($target['value'], _dfp_prepare_tokens($tag), array('sanitize' => TRUE, 'clear' => TRUE));
+      }
+
+      $global_targeting = array();
+      foreach ($tag->global_targeting as $target) {
+        $global_targeting[$target['target']] = token_replace($target['value'], _dfp_prepare_tokens($tag), array('sanitize' => TRUE, 'clear' => TRUE));
+      }
+
+      // Give preference to tag specific targeting values
+      $targeting = $targeting + $global_targeting;
+
+      $to_json = array('targeting' => $targeting);
+      $variables['amp_ad_json'] = drupal_json_encode($to_json);
+    }
   }
-
-  $tag = _dfp_prepare_adunit($variables['tag']);
-  $tag->adunit = _dfp_clean_adunit(token_replace('[dfp_tag:network_id]/' . $tag->adunit, _dfp_prepare_tokens($tag), array('sanitize' => TRUE, 'clear' => TRUE)));
-
-  // We add global targeting to each dfp tag to simplify implementation.
-  $global_targeting = variable_get('dfp_targeting', array());
-  drupal_alter('dfp_global_targeting', $global_targeting);
-  $tag->global_targeting = $global_targeting;
-
-  $variables['slot'] = $tag->adunit;
-
-  // Prepare targeting arrays for JSON formatting
-  $targeting = array();
-  foreach ($tag->targeting as $target) {
-    $targeting[$target['target']] = token_replace($target['value'], _dfp_prepare_tokens($tag), array('sanitize' => TRUE, 'clear' => TRUE));
-  }
-
-  $global_targeting = array();
-  foreach ($tag->global_targeting as $target) {
-    $global_targeting[$target['target']] = token_replace($target['value'], _dfp_prepare_tokens($tag), array('sanitize' => TRUE, 'clear' => TRUE));
-  }
-
-  // Give preference to tag specific targeting values
-  $targeting = $targeting + $global_targeting;
-
-  $to_json = array('targeting' => $targeting);
-  $variables['amp_ad_json'] = drupal_json_encode($to_json);
 }
 
 /**

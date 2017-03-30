@@ -681,7 +681,8 @@ function amp_page_alter(array &$page) {
  * Implements hook_node_view().
  */
 function amp_node_view($node, $view_mode, $langcode) {
-  if (amp_is_amp_request()) {
+  $node = menu_get_object();
+  if ($node && in_array($node->type, amp_get_enabled_types()) && amp_node_is_enabled($node->nid)) {
     return;
   }
 

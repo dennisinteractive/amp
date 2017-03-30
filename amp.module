@@ -681,13 +681,14 @@ function amp_page_alter(array &$page) {
  * Implements hook_node_view().
  */
 function amp_node_view($node, $view_mode, $langcode) {
-  $node = menu_get_object();
-  if ($node && in_array($node->type, amp_get_enabled_types()) && amp_node_is_enabled($node->nid)) {
-    return;
+  if ($node = menu_get_object()) {
+    if (!in_array($node->type, amp_get_enabled_types()) || !amp_node_is_enabled($node->nid)) {
+      return;
+    }
   }
 
   // Show amphtml links on AMP-enabled nodes so search engines can find AMP.
-  if ($view_mode == 'full' && node_is_page($node) && in_array($node->type, amp_get_enabled_types())) {
+  if ($view_mode == 'full' && node_is_page($node)) {
     $uri = entity_uri('node', $node);
     $uri['options']['query']['amp'] = NULL;
     $uri['options']['absolute'] = TRUE;

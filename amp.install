@@ -54,6 +54,7 @@ function amp_requirements($phase) {
  */
 function amp_uninstall() {
   // Delete variables.
+  variable_del('amp_url_format');
   variable_del('amp_theme');
   variable_del('amp_google_analytics_id');
   variable_del('amp_google_adsense_id');

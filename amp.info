@@ -6,3 +6,6 @@ php = 5.5
 dependencies[] = token
 dependencies[] = ctools
 files[] = tests/amp.test
+files[] = tests/amp_url_formats.test
+
+testing_api = 2.x

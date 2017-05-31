@@ -42,6 +42,18 @@ function amp_admin_form($form, &$form_state) {
     );
   }
 
+  $form['amp_url_format'] = array(
+    '#type' => 'radios',
+    '#title' => t('URL format'),
+    '#default_value' => variable_get('amp_url_format', 'query_string'),
+    '#options' => array(
+      'query_string' => 'Query string (www.example.com/article?amp)',
+      'prefix' => 'Path prefix (www.example.com/amp/article)',
+      'suffix' => 'Path suffix (www.example.com/article/amp)',
+    ),
+    '#description' => t('Choose how your amp urls look.'),
+  );
+
   // AMP theme settings.
   $form['amp_theme'] = array(
     '#type' => 'select',
@@ -174,14 +186,14 @@ function amp_admin_form($form, &$form_state) {
 /**
  * Submit handler for the amp_admin_form
  * Clears the Drupal cache if the AMP Library warnings display checkbox value is changed
- * 
+ *
  * @param type $form
  * @param type $form_state
  */
 function amp_admin_form_submit($form, &$form_state) {
   if (variable_get('amp_library_warnings_display', false) !== $form_state['values']['amp_library_warnings_display']) {
     cache_clear_all();
-    drupal_set_message(t('AMP Library debugging checkbox changed. Cleared cache.'));    
+    drupal_set_message(t('AMP Library debugging checkbox changed. Cleared cache.'));
   }
 }
 

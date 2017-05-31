@@ -38,6 +38,9 @@ class AmpTestUrlFormats extends DrupalWebTestCase {
     // checkout amptheme.
     theme_enable(array('amptheme', 'ampsubtheme_example'));
 
+    // Enable Clean urls.
+    variable_set('clean_url', TRUE);
+
     // Enable AMP display on article content.
     $this->drupalGet("admin/structure/types/manage/article/display");
     $this->assertResponse(200);

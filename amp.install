@@ -50,6 +50,41 @@ function amp_requirements($phase) {
 }
 
 /**
+ * Implements hook_install.
+ *
+ * Add new table for unpublished AMP nodes.
+ */
+function amp_schema() {
+  $schema['amp_node'] = array(
+    'description' => 'Stores preferences for amp nodes.',
+    'primary key' => array('aid'),
+    'fields' => array(
+      'aid' => array(
+        'description' => 'The {amp}.id of the amp node.',
+        'type' => 'int',
+        'unsigned' => TRUE,
+        'not null' => TRUE,
+        'default' => 0,
+      ),
+      'status' => array(
+        'description' => 'Boolean indicating whether the node is AMP enabled by default.',
+        'type' => 'int',
+        'unsigned' => TRUE,
+        'not null' => TRUE,
+        'default' => 1,
+        'size' => 'tiny',
+      ),
+    ),
+    'indexes' => array(
+      'aid' => array('aid'),
+      'status' => array('status'),
+    ),
+  );
+
+  return $schema;
+}
+
+/**
  * Implements hook_uninstall().
  */
 function amp_uninstall() {
@@ -78,4 +113,13 @@ function amp_uninstall() {
 function amp_update_7001() {
   // For backwards compatibility since the code has been moved to a submodule.
   module_enable(array('amp_analytics'));
+}
+
+/**
+ * Add new table to track unpublished AMP nodes.
+ */
+function amp_update_7002() {
+  if (!db_table_exists('amp_node')) {
+    drupal_install_schema('amp');
+  }
 }

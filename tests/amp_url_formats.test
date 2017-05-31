@@ -82,8 +82,6 @@ class AmpTestUrlFormats extends DrupalWebTestCase {
    * Test the url with query string ?amp.
    */
   public function testAmpUrlFormatQueryString() {
-    global $base_url;
-
     // Login as an admin user.
     $this->drupalLogin($this->admin_user);
 
@@ -107,12 +105,14 @@ class AmpTestUrlFormats extends DrupalWebTestCase {
     // Check link rel on full display.
     $this->drupalGet('foo');
     $this->assertResponse(200);
-    $this->assertRaw('link rel="amphtml" href="' . $base_url . '/foo?amp"');
+    $pattern = '|link\srel="amphtml"\shref="http(.*):\/\/(.*)\/foo\?amp|';
+    $this->assertPattern($pattern, 'Link amphtml href is correct.');
 
     // Same check as above, using node/nid.
     $this->drupalGet('node/1');
     $this->assertResponse(200);
-    $this->assertRaw('link rel="amphtml" href="' . $base_url . '/foo?amp"');
+    $pattern = '|link\srel="amphtml"\shref="http(.*):\/\/(.*)\/foo\?amp|';
+    $this->assertPattern($pattern, 'Link amphtml href is correct.');
 
     // Check AMP page with prefix path 'amp' should 404.
     $this->drupalGet('amp/foo');
@@ -127,7 +127,8 @@ class AmpTestUrlFormats extends DrupalWebTestCase {
     $this->assertResponse(200);
     // Commented out until we find a way to make drupal CI checkout amptheme.
     // $this->assertRaw('<html amp lang');
-    $this->assertRaw('link rel="canonical" href="' . $base_url . '/foo"');
+    $pattern = '|link\srel="canonical"\shref="http(.*):\/\/(.*)\/foo|';
+    $this->assertPattern($pattern, 'Link canonical href is correct.');
 
     // Check admin UI is not an amp page.
     $this->drupalGet('node/1/edit', array('query' => array('amp' => NULL)));
@@ -138,8 +139,6 @@ class AmpTestUrlFormats extends DrupalWebTestCase {
    * Test the url with prefix path 'amp'.
    */
   public function testAmpUrlFormatPrefix() {
-    global $base_url;
-
     // Login as an admin user.
     $this->drupalLogin($this->admin_user);
 
@@ -164,19 +163,22 @@ class AmpTestUrlFormats extends DrupalWebTestCase {
     // Check link rel on full display.
     $this->drupalGet('foo');
     $this->assertResponse(200);
-    $this->assertRaw('link rel="amphtml" href="' . $base_url . '/amp/foo"');
+    $pattern = '|link\srel="amphtml"\shref="http(.*):\/\/(.*)\/amp/foo|';
+    $this->assertPattern($pattern, 'Link amphtml href is correct.');
 
     // Same check as above, using node/nid.
     $this->drupalGet('node/1');
     $this->assertResponse(200);
-    $this->assertRaw('link rel="amphtml" href="' . $base_url . '/amp/foo"');
+    $pattern = '|link\srel="amphtml"\shref="http(.*):\/\/(.*)\/amp/foo|';
+    $this->assertPattern($pattern, 'Link amphtml href is correct.');
 
     // Check AMP page with prefix path 'amp' should work.
     $this->drupalGet('amp/foo');
     $this->assertResponse(200);
     // Commented out until we find a way to make drupal CI checkout amptheme.
     // $this->assertRaw('<html amp lang');
-    $this->assertRaw('link rel="canonical" href="' . $base_url . '/foo"');
+    $pattern = '|link\srel="canonical"\shref="http(.*):\/\/(.*)\/foo|';
+    $this->assertPattern($pattern, 'Link canonical href is correct.');
 
     // Check AMP page with suffix path 'amp' should 404.
     $this->drupalGet('foo/amp');
@@ -186,21 +188,21 @@ class AmpTestUrlFormats extends DrupalWebTestCase {
     $this->drupalGet('foo');
     $this->assertResponse(200);
     $this->assertNoRaw('<html amp lang');
-    $this->assertRaw('link rel="amphtml" href="' . $base_url . '/amp/foo"');
+    $pattern = '|link\srel="amphtml"\shref="http(.*):\/\/(.*)\/amp/foo|';
+    $this->assertPattern($pattern, 'Link amphtml href is correct.');
 
     // Check AMP page with query string ?amp should show full display.
     $this->get('foo?amp');
     $this->assertResponse(200);
     $this->assertNoRaw('<html amp lang');
-    $this->assertRaw('link rel="amphtml" href="' . $base_url . '/amp/foo"');
+    $pattern = '|link\srel="amphtml"\shref="http(.*):\/\/(.*)\/amp/foo|';
+    $this->assertPattern($pattern, 'Link amphtml href is correct.');
   }
 
   /**
    * Test the url with suffix path 'amp'.
    */
   public function testAmpUrlFormatSuffix() {
-    global $base_url;
-
     // Login as an admin user.
     $this->drupalLogin($this->admin_user);
 
@@ -225,12 +227,14 @@ class AmpTestUrlFormats extends DrupalWebTestCase {
     // Check link rel on full display.
     $this->drupalGet('foo');
     $this->assertResponse(200);
-    $this->assertRaw('link rel="amphtml" href="' . $base_url . '/foo/amp"');
+    $pattern = '|link\srel="amphtml"\shref="http(.*):\/\/(.*)\/foo/amp|';
+    $this->assertPattern($pattern, 'Link amphtml href is correct.');
 
     // Same check as above, using node/nid.
     $this->drupalGet('node/1');
     $this->assertResponse(200);
-    $this->assertRaw('link rel="amphtml" href="' . $base_url . '/foo/amp"');
+    $pattern = '|link\srel="amphtml"\shref="http(.*):\/\/(.*)\/foo/amp|';
+    $this->assertPattern($pattern, 'Link amphtml href is correct.');
 
     // Check AMP page with prefix path 'amp' should 404.
     $this->drupalGet('amp/foo');
@@ -241,19 +245,22 @@ class AmpTestUrlFormats extends DrupalWebTestCase {
     $this->assertResponse(200);
     // Commented out until we find a way to make drupal CI checkout amptheme.
     // $this->assertRaw('<html amp lang');
-    $this->assertRaw('link rel="canonical" href="' . $base_url . '/foo"');
+    $pattern = '|link\srel="canonical"\shref="http(.*):\/\/(.*)\/foo|';
+    $this->assertPattern($pattern, 'Link canonical href is correct.');
 
     // Check AMP page with query string ?amp should show full display.
     $this->get('foo?amp');
     $this->assertResponse(200);
     $this->assertNoRaw('<html amp lang');
-    $this->assertRaw('link rel="amphtml" href="' . $base_url . '/foo/amp"');
+    $pattern = '|link\srel="amphtml"\shref="http(.*):\/\/(.*)\/foo/amp|';
+    $this->assertPattern($pattern, 'Link amphtml href is correct.');
 
     // This should show full display.
     $this->drupalGet('foo');
     $this->assertResponse(200);
     $this->assertNoRaw('<html amp lang');
-    $this->assertRaw('link rel="amphtml" href="' . $base_url . '/foo/amp"');
+    $pattern = '|link\srel="amphtml"\shref="http(.*):\/\/(.*)\/foo/amp|';
+    $this->assertPattern($pattern, 'Link amphtml href is correct.');
   }
 
 }

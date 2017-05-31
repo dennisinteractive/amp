@@ -42,6 +42,18 @@ function amp_admin_form($form, &$form_state) {
     );
   }
 
+  $form['amp_url_format'] = array(
+    '#type' => 'radios',
+    '#title' => t('URL format'),
+    '#default_value' => variable_get('amp_url_format', 'query_string'),
+    '#options' => array(
+      'query_string' => 'Query string (www.example.com/article?amp)',
+      'prefix' => 'Path prefix (www.example.com/amp/article)',
+      'suffix' => 'Path suffix (www.example.com/article/amp)',
+    ),
+    '#description' => t('Choose how your amp urls look.'),
+  );
+
   // AMP theme settings.
   $form['amp_theme'] = array(
     '#type' => 'select',

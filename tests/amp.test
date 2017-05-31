@@ -22,14 +22,23 @@ class AmpTestCase extends DrupalWebTestCase {
 
     // Create Admin user.
     $this->admin_user = $this->drupalCreateUser(array(
+        'access administration pages',
         'administer content types',
+        'administer site configuration',
         'administer fields',
+        'create article content',
       )
     );
     $this->drupalLogin($this->admin_user);
 
     // Install the AMP theme.
     theme_enable(array('amptheme', 'ampsubtheme_example'));
+
+    // Enable AMP display on article content.
+    $this->drupalGet("admin/structure/types/manage/article/display");
+    $this->assertResponse(200);
+    $edit = ["view_modes_custom[amp]" => '1'];
+    $this->drupalPost(NULL, $edit, t('Save'));
   }
 
   /**
@@ -41,12 +50,6 @@ class AmpTestCase extends DrupalWebTestCase {
 
     // Create a node to test AMP metadata.
     $node = $this->drupalCreateNode(array('type' => 'article'));
-
-    // Enable AMP display on article content.
-    $this->drupalGet("admin/structure/types/manage/article/display");
-    $this->assertResponse(200);
-    $edit = ["view_modes_custom[amp]" => '1'];
-    $this->drupalPost(NULL, $edit, t('Save'));
 
     // Check the full display.
     $this->drupalGet('node/' . $node->nid);

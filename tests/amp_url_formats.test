@@ -1,0 +1,254 @@
+<?php
+
+/**
+ * @file
+ * Tests for amp.module.
+ */
+
+class AmpTestUrlFormats extends DrupalWebTestCase {
+  protected $admin_user;
+
+  public static function getInfo() {
+    return array(
+      'name' => 'AMP Url formats',
+      'description' => 'Tests AMP pages using prefix /amp and query string ?amp.',
+      'group' => 'AMP',
+    );
+  }
+
+  protected function setUp() {
+    // Enable modules.
+    parent::setUp('field_ui', 'amp_test', 'path', 'amp');
+
+    // Create Admin user.
+    $this->admin_user = $this->drupalCreateUser(array(
+        'create url aliases',
+        'access administration pages',
+        'administer site configuration',
+        'administer content types',
+        'administer fields',
+        'create article content',
+        'edit any article content',
+      )
+    );
+    $this->drupalLogin($this->admin_user);
+
+    // Install the AMP theme.
+    theme_enable(array('amptheme', 'ampsubtheme_example'));
+
+    // Enable AMP display on article content.
+    $this->drupalGet("admin/structure/types/manage/article/display");
+    $this->assertResponse(200);
+    $edit = ["view_modes_custom[amp]" => '1'];
+    $this->drupalPost(NULL, $edit, t('Save'));
+  }
+
+  /**
+   * Get a url without manipulation.
+   *
+   * Avoids manipulation of the url by drupal,
+   * required when we need to test a url that
+   * we know the system wants to re-write.
+   *
+   * @param $path
+   *   The path that we want to load.
+   * @param array $headers
+   *   The request headers.
+   *
+   * @return mixed
+   */
+  protected function get($path, array $headers = array()) {
+    $url = $this->getAbsoluteUrl($path);
+
+    // We re-using a CURL connection here. If that connection still has certain
+    // options set, it might change the GET into a POST. Make sure we clear out
+    // previous options.
+    $out = $this->curlExec(array(CURLOPT_HTTPGET => TRUE, CURLOPT_URL => $url, CURLOPT_NOBODY => FALSE, CURLOPT_HTTPHEADER => $headers));
+    $this->refreshVariables(); // Ensure that any changes to variables in the other thread are picked up.
+
+    // Replace original page output with new output from redirected page(s).
+    if ($new = $this->checkForMetaRefresh()) {
+      $out = $new;
+    }
+    $this->verbose('GET request to: ' . $path .
+      '<hr />Ending URL: ' . $this->getUrl() .
+      '<hr />' . $out);
+    return $out;
+  }
+
+  /**
+   * Test the url with query string ?amp.
+   */
+  public function testAmpUrlFormatQueryString() {
+    global $base_url;
+
+    // Login as an admin user.
+    $this->drupalLogin($this->admin_user);
+
+    // Test with query string ?amp
+    $this->drupalGet('admin/config/content/amp');
+    $this->assertResponse(200);
+    $this->assertRaw('Query string (www.example.com/article?amp)');
+    $edit = ["amp_url_format" => 'query_string'];
+    $this->drupalPost(NULL, $edit, t('Save configuration'));
+
+    // Create a node to test the url detection.
+    $this->drupalGet('node/add/article');
+    $this->assertResponse(200);
+    $edit = [
+      "title" => 'AMP Page foo test',
+      "body[und][0][value]" => 'Foo',
+      "path[alias]" => 'foo',
+    ];
+    $this->drupalPost(NULL, $edit, t('Save'));
+
+    // Check link rel on full display.
+    $this->drupalGet('foo');
+    $this->assertResponse(200);
+    $this->assertRaw('link rel="amphtml" href="' . $base_url . '/foo?amp"');
+
+    // Same check as above, using node/nid.
+    $this->drupalGet('node/1');
+    $this->assertResponse(200);
+    $this->assertRaw('link rel="amphtml" href="' . $base_url . '/foo?amp"');
+
+    // Check AMP page with prefix path 'amp' should 404.
+    $this->drupalGet('amp/foo');
+    $this->assertResponse(404);
+
+    // Check AMP page with suffix path 'amp' should 404.
+    $this->drupalGet('foo/amp');
+    $this->assertResponse(404);
+
+    // Check AMP page with query string ?amp.
+    $this->get('foo?amp');
+    $this->assertResponse(200);
+    $this->assertRaw('<html amp lang');
+    $this->assertRaw('link rel="canonical" href="' . $base_url . '/foo"');
+
+    // Check admin UI is not an amp page.
+    $this->drupalGet('node/1/edit', array('query' => array('amp' => NULL)));
+    $this->assertNoRaw('<html amp lang');
+  }
+
+  /**
+   * Test the url with prefix path 'amp'.
+   */
+  public function testAmpUrlFormatPrefix() {
+    global $base_url;
+
+    // Login as an admin user.
+    $this->drupalLogin($this->admin_user);
+
+    // Test with prefix path 'amp'
+    $this->drupalGet('admin/config/content/amp');
+    $this->assertResponse(200);
+    $this->assertRaw('Path prefix (www.example.com/amp/article)');
+    $edit = ['amp_url_format' => 'prefix'];
+    $this->drupalPost(NULL, $edit, t('Save configuration'));
+    menu_cache_clear_all();
+
+    // Create a node to test the url detection.
+    $this->drupalGet('node/add/article');
+    $this->assertResponse(200);
+    $edit = [
+      "title" => 'AMP Page foo test',
+      "body[und][0][value]" => 'Foo',
+      "path[alias]" => 'foo',
+    ];
+    $this->drupalPost(NULL, $edit, t('Save'));
+
+    // Check link rel on full display.
+    $this->drupalGet('foo');
+    $this->assertResponse(200);
+    $this->assertRaw('link rel="amphtml" href="' . $base_url . '/amp/foo"');
+
+    // Same check as above, using node/nid.
+    $this->drupalGet('node/1');
+    $this->assertResponse(200);
+    $this->assertRaw('link rel="amphtml" href="' . $base_url . '/amp/foo"');
+
+    // Check AMP page with prefix path 'amp' should work.
+    $this->drupalGet('amp/foo');
+    $this->assertResponse(200);
+    $this->assertRaw('<html amp lang');
+    $this->assertRaw('link rel="canonical" href="' . $base_url . '/foo"');
+
+    // Check AMP page with suffix path 'amp' should 404.
+    $this->drupalGet('foo/amp');
+    $this->assertResponse(404);
+
+    // This should show full display.
+    $this->drupalGet('foo');
+    $this->assertResponse(200);
+    $this->assertNoRaw('<html amp lang');
+    $this->assertRaw('link rel="amphtml" href="' . $base_url . '/amp/foo"');
+
+    // Check AMP page with query string ?amp should show full display.
+    $this->get('foo?amp');
+    $this->assertResponse(200);
+    $this->assertNoRaw('<html amp lang');
+    $this->assertRaw('link rel="amphtml" href="' . $base_url . '/amp/foo"');
+  }
+
+  /**
+   * Test the url with suffix path 'amp'.
+   */
+  public function testAmpUrlFormatSuffix() {
+    global $base_url;
+
+    // Login as an admin user.
+    $this->drupalLogin($this->admin_user);
+
+    // Test with suffix path 'amp'
+    $this->drupalGet('admin/config/content/amp');
+    $this->assertResponse(200);
+    $this->assertRaw('Path suffix (www.example.com/article/amp)');
+    $edit = ['amp_url_format' => 'suffix'];
+    $this->drupalPost(NULL, $edit, t('Save configuration'));
+    menu_cache_clear_all();
+
+    // Create a node to test the url detection.
+    $this->drupalGet('node/add/article');
+    $this->assertResponse(200);
+    $edit = [
+      "title" => 'AMP Page foo test',
+      "body[und][0][value]" => 'Foo',
+      "path[alias]" => 'foo',
+    ];
+    $this->drupalPost(NULL, $edit, t('Save'));
+
+    // Check link rel on full display.
+    $this->drupalGet('foo');
+    $this->assertResponse(200);
+    $this->assertRaw('link rel="amphtml" href="' . $base_url . '/foo/amp"');
+
+    // Same check as above, using node/nid.
+    $this->drupalGet('node/1');
+    $this->assertResponse(200);
+    $this->assertRaw('link rel="amphtml" href="' . $base_url . '/foo/amp"');
+
+    // Check AMP page with prefix path 'amp' should 404.
+    $this->drupalGet('amp/foo');
+    $this->assertResponse(404);
+
+    // Check AMP page with suffix path 'amp' should work.
+    $this->drupalGet('foo/amp');
+    $this->assertResponse(200);
+    $this->assertRaw('<html amp lang');
+    $this->assertRaw('link rel="canonical" href="' . $base_url . '/foo"');
+
+    // Check AMP page with query string ?amp should show full display.
+    $this->get('foo?amp');
+    $this->assertResponse(200);
+    $this->assertNoRaw('<html amp lang');
+    $this->assertRaw('link rel="amphtml" href="' . $base_url . '/foo/amp"');
+
+    // This should show full display.
+    $this->drupalGet('foo');
+    $this->assertResponse(200);
+    $this->assertNoRaw('<html amp lang');
+    $this->assertRaw('link rel="amphtml" href="' . $base_url . '/foo/amp"');
+  }
+
+}

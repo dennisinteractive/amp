@@ -284,6 +284,65 @@ function amp_entity_info_alter(&$entity_info) {
 }
 
 /**
+ * Implements hook_url_inbound_alter().
+ *
+ * Rewrites the active path for AMP pages to the non-AMP path.
+ *
+ * Allows url() to act as the central source of manipulation
+ * for both inbound and outbound urls.
+ */
+function amp_url_inbound_alter(&$path, $original_path, $path_language) {
+  if (!amp_is_amp_request()) {
+    return;
+  }
+
+  switch (variable_get('amp_url_format', 'query_string')) {
+    case 'query_string':
+      return;
+    case 'suffix':
+      $non_amp_path = $path;
+      if (substr($non_amp_path, -strlen('/amp')) == '/amp') {
+        $non_amp_path = substr($path, 0, strlen($path) - strlen('/amp'));
+      }
+      break;
+    case 'prefix':
+      $non_amp_path = $path;
+      if (substr($non_amp_path, 0, strlen('amp/')) == 'amp/') {
+        $non_amp_path = substr($path, strlen('amp/'), strlen($path));
+      }
+      break;
+  }
+  $system_path = drupal_lookup_path('source', $non_amp_path, $path_language);
+  $path = $system_path ?: $non_amp_path;
+
+  menu_set_active_item($path);
+}
+
+/**
+ * Implements hook_url_outbound_alter().
+ *
+ * Change the url depending on the amp format specified.
+ *
+ * Allows url() to act as the central source of manipulation
+ * for both inbound and outbound urls.
+ */
+function amp_url_outbound_alter(&$path, &$options, $original_path) {
+  // The 'amp' query param can be set to null so need to check for key not value.
+  if (isset($options['query']) && array_key_exists('amp', $options['query'])) {
+    switch (variable_get('amp_url_format', 'query_string')) {
+      case 'suffix':
+        $path .= '/amp';
+        unset($options['query']['amp']);
+        break;
+      case 'prefix':
+        $path = 'amp/' . $path;
+        unset($options['query']['amp']);
+        break;
+    }
+  }
+}
+
+/**
  * Determines whether a request should return AMP HTML.
  */
 function amp_is_amp_request() {
@@ -291,18 +350,37 @@ function amp_is_amp_request() {
 
   if (!isset($result)) {
     $result = FALSE;
+    $current_path = current_path();
 
-    // The current request must have '?amp' in the query string.
-    if (isset($_GET['amp'])) {
+    switch (variable_get('amp_url_format', 'query_string')) {
+      case 'query_string':
+        $is_amp_path = isset($_GET['amp']);
+        $non_amp_path = $current_path;
+        break;
+      case 'suffix':
+        $is_amp_path = substr($current_path, -strlen('/amp')) == '/amp';
+        $non_amp_path = substr($current_path, 0, strlen($current_path) - strlen('/amp'));
+        break;
+      case 'prefix':
+        $is_amp_path = substr($current_path, 0, strlen('amp/')) == 'amp/';
+        $non_amp_path = substr($current_path, strlen('amp/'), strlen($current_path));
+        break;
+    }
+
+    // Check that the path format is a valid amp format,
+    // and that original path isn't an already registered route.
+    // @TODO These amp paths should really be registered as system routes.
+    if ($is_amp_path && !(drupal_valid_path($current_path) && $current_path !== $non_amp_path)) {
       // Ensure that there is a node loaded from the current request, and that
       // it is a node type which has the AMP view mode enabled.
-      $node = menu_get_object();
+      $non_amp_path = drupal_get_normal_path($non_amp_path);
+      $node = menu_get_object('node', 1, $non_amp_path);
       if ($node && in_array($node->type, amp_get_enabled_types())) {
         // Do an additional check to ensure the current path is actually the
         // node's public URI. Without this check, this function would return
         // TRUE on the node's edit form.
         $uri = entity_uri('node', $node);
-        if ($uri['path'] == current_path()) {
+        if ($uri['path'] == $non_amp_path) {
           // Only if all of the above conditions are true is this a valid AMP
           // request.
           $result = TRUE;
@@ -363,7 +441,7 @@ function amp_form_node_form_alter(&$form, &$form_state, $form_id) {
 /**
  * Submit handler for viewing the AMP page.
  */
-function amp_node_form_submit(&$form, $form_state) {
+function amp_node_form_submit($form, &$form_state) {
   if (!empty($form_state['node']->path['alias'])) {
     $current_path = $form_state['node']->path['alias'];
   }
@@ -371,17 +449,25 @@ function amp_node_form_submit(&$form, $form_state) {
     $current_path = 'node/' . $form_state['node']->nid;
   }
 
-  // We need to remove destination if its there
+  // We should respect all the usual redirection exceptions,
+  // except those set in the query string.
   unset($_GET['destination']);
 
   // We must pass amp => null as there is no value to the amp parameter
-  drupal_goto($current_path, array('query' => array('amp' => null)));
+  $form_state['redirect'] = array(
+    $current_path,
+    array(
+      'query' => array(
+        'amp' => NULL,
+      ),
+    ),
+  );
 }
 
 /**
  * Submit handler for viewing the AMP page with warnings/fixes messages
  */
-function amp_node_form_submit_warnfix(&$form, $form_state) {
+function amp_node_form_submit_warnfix($form, &$form_state) {
   if (!empty($form_state['node']->path['alias'])) {
     $current_path = $form_state['node']->path['alias'];
   }
@@ -389,11 +475,20 @@ function amp_node_form_submit_warnfix(&$form, $form_state) {
     $current_path = 'node/' . $form_state['node']->nid;
   }
 
-  // We need to remove destination if its there
+  // We should respect all the usual redirection exceptions,
+  // except those set in the query string.
   unset($_GET['destination']);
 
   // We must pass amp => null as there is no value to the amp parameter
-  drupal_goto($current_path, array('query' => array('amp' => null, 'warnfix' => null)));
+  $form_state['redirect'] = array(
+    $current_path,
+    array(
+      'query' => array(
+        'amp' => NULL,
+        'warnfix' => null
+      ),
+    ),
+  );
 }
 
 /**
@@ -593,9 +688,11 @@ function amp_node_view($node, $view_mode, $langcode) {
   // Show amphtml links on AMP-enabled nodes so search engines can find AMP.
   if ($view_mode == 'full' && node_is_page($node) && in_array($node->type, amp_get_enabled_types())) {
     $uri = entity_uri('node', $node);
-    $uri['options']['query']['amp'] = NULL;
     $uri['options']['absolute'] = TRUE;
-    drupal_add_html_head_link(array('rel' => 'amphtml', 'href' => url($uri['path'], $uri['options'])), TRUE);
+    $uri['options']['query']['amp'] = NULL;
+    $alias_path = drupal_get_path_alias($uri['path']);
+
+    drupal_add_html_head_link(array('rel' => 'amphtml', 'href' => url($alias_path, $uri['options'])), TRUE);
   }
 
   // Add AMP metadata.

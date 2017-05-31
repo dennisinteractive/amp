@@ -383,7 +383,7 @@ function amp_is_amp_request() {
           // node's public URI. Without this check, this function would return
           // TRUE on the node's edit form.
           $uri = entity_uri('node', $node);
-          if ($uri['path'] == current_path()) {
+          if ($uri['path'] == $non_amp_path) {
             // Only if all of the above conditions are true is this a valid AMP
             // request.
             $result = TRUE;

@@ -107,7 +107,8 @@ function amp_theme() {
     ),
     'amp_analytics' => array(
       'variables' => array(
-        'account' => NULL,
+        'content' => NULL,
+        'analytics' => NULL,
         'analytics_attributes' => NULL,
         'analytics_attributes_array' => array()
       ),
@@ -251,6 +252,19 @@ function amp_preprocess_amp_ad(&$variables) {
  */
 function amp_preprocess_amp_analytics(&$variables) {
   $variables['analytics_attributes'] = drupal_attributes($variables['analytics_attributes_array']);
+  $variables['analytics'] = array(
+    'vars' => array(
+      'account' => variable_get('amp_google_analytics_id'),
+    ),
+    'triggers' => array(
+      'trackAmpview' => array(
+        'on' => 'visible',
+        'request' => 'pageview',
+      ),
+    ),
+  );
+
+  $variables['content'] = json_encode($variables['analytics']);
 }
 
 /**
@@ -606,7 +620,6 @@ function amp_page_alter(array &$page) {
     if (!empty($google_analytics_id)) {
       $amp_analytics = array(
         '#type' => 'amp_analytics',
-        '#account' => $google_analytics_id,
         '#analytics_attributes_array' => array(
           'type' => 'googleanalytics'
         )

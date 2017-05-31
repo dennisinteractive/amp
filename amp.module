@@ -263,7 +263,12 @@ function amp_preprocess_amp_analytics(&$variables) {
       ),
     ),
   );
+}
 
+/**
+ * Implements hook_process_amp_analytics().
+ */
+function amp_process_amp_analytics(&$variables) {
   $variables['content'] = json_encode($variables['analytics']);
 }
 

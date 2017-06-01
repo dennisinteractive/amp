@@ -51,7 +51,7 @@ class AmpNodeTestCase extends DrupalWebTestCase {
     $this->drupalGet('node/' . $node->nid);
     $this->assertResponse(200);
     // Check amphtml link.
-    $pattern = '|<link rel="amphtml" href="http(.*):\/\/(.*)node\/1\?.*amp"\s\/>|';
+    $pattern = '|<link rel="amphtml" href="http(.*):\/\/(.*)node\/1\?.*amp|';
     $this->assertPattern($pattern, 'Check that link rel="amphtml" is present on the page.');
     // Visit amp page.
     $this->drupalGet('node/' . $node->nid, array('query' => array('amp' => TRUE)));

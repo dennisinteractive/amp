@@ -3,9 +3,9 @@ description = Google AMP integration
 core = 7.x
 configure = admin/config/content/amp
 php = 5.5
+testing_api = 2.x
 dependencies[] = token
 dependencies[] = ctools
 files[] = tests/amp.test
 files[] = tests/amp_url_formats.test
-
-testing_api = 2.x
+files[] = tests/amp_node.test

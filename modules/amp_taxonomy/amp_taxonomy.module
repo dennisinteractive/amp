@@ -1,0 +1,44 @@
+<?php
+
+/**
+ * @file
+ * Contains amp_taxonomy.module.
+ */
+
+/**
+ * Implements hook_custom_theme().
+ */
+function amp_taxonomy_custom_theme() {
+  // Little trick to make term pages be treated as AMP pages.
+  if (isset($_GET['amp']) && arg(0) == 'taxonomy' && arg(1) == 'term') {
+    $is_amp_request = &drupal_static('amp_is_amp_request');
+    $is_amp_request = TRUE;
+    return variable_get('amp_theme', 'ampsubtheme_example');
+  }
+}
+
+/**
+ * Implements hook_taxonomy_term_view().
+ */
+function amp_taxonomy_taxonomy_term_view($term, $view_mode, $langcode) {
+  $uri = entity_uri('taxonomy_term', $term);
+  $uri['options']['absolute'] = TRUE;
+
+  // Add amphtml tag.
+  if ($view_mode == 'full') {
+    $uri['options']['query']['amp'] = NULL;
+    drupal_add_html_head_link(array('rel' => 'amphtml', 'href' => url($uri['path'], $uri['options'])), TRUE);
+  }
+
+  // Add AMP metadata.
+  if ($view_mode == 'amp') {
+    $metadata_json['@context'] = 'http://schema.org';
+
+    $metadata_json['mainEntityOfPage'] = url($uri['path'], $uri['options']);
+    $metadata_json['@context'] = 'http://schema.org';
+    $metadata_json['@type'] = 'Article';
+    $metadata_json['headline'] = $term->name;
+
+    amp_metadata($metadata_json);
+  }
+}

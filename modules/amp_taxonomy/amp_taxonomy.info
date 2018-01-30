@@ -1,0 +1,5 @@
+name = AMP Taxonomy
+description = Provides AMP support for taxonomy terms
+core = 7.x
+php = 5.5
+dependencies[] = amp

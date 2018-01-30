@@ -24,9 +24,15 @@ class AmpTestCase extends DrupalWebTestCase {
     $this->admin_user = $this->drupalCreateUser(array(
         'administer content types',
         'administer fields',
+        'administer site configuration',
       )
     );
     $this->drupalLogin($this->admin_user);
+
+    // Site settings.
+    variable_set('clean_url', TRUE);
+    variable_set('site_name', 'AMP Test');
+    variable_set('amp_metadata_organization_name', '[site:name]');
 
     // Install the AMP theme.
     theme_enable(array('amptheme', 'ampsubtheme_example'));
@@ -56,12 +62,33 @@ class AmpTestCase extends DrupalWebTestCase {
     $pattern = '|<link rel="amphtml" href="http(.*):\/\/(.*)node\/1[&\?]amp(.*)"\s\/>|';
     $this->assertPattern($pattern, 'Check that link rel="amphtml" is present on the page.');
 
+    // Check amp configuration page.
+    $this->drupalGet('admin/config/content/amp');
+    $this->clickLink('AMP Metadata');
+    $this->assertResponse(200);
+    $this->clickLink('Edit AMP metadata settings');
+    $this->assertResponse(200);
+    $edit = ["amp_metadata_options[amp_metadata_config_author]" => '[node:author:name]'];
+    $this->drupalPost(NULL, $edit, t('Save content type'));
+
     // Check the AMP display.
     $this->drupalGet('node/' . $node->nid, array('query' => array('amp' => TRUE)));
     $this->assertResponse(200);
     $this->assertText($node->body[LANGUAGE_NONE][0]['value']);
     $pattern = '|<link rel="canonical" href="http(.*):\/\/(.*)node\/1"\s\/>|';
     $this->assertPattern($pattern, 'Check that link rel="canonical" is present on the page.');
+
+    // Check metatags.
+    $this->assertPattern('|ld\+json[\S\s]*mainEntityOfPage.*?node/' . $node->nid . '|');
+    $this->assertPattern('|ld\+json[\S\s]*@type.*?NewsArticle|');
+    $this->assertPattern('|ld\+json[\S\s]*headline.*?' . $node->title. '|');
+    $this->assertPattern('|ld\+json[\S\s]*datePublished.*?' . format_date($node->created, 'medium') . '|');
+    $this->assertPattern('|ld\+json[\S\s]*dateModified.*?' . format_date($node->changed, 'medium') . '|');
+    $this->assertPattern('|ld\+json[\S\s]*description.*\w+|');
+    $this->assertPattern('|ld\+json[\S\s]*author[\S\s]*type.*Person|');
+    $this->assertPattern('|ld\+json[\S\s]*author[\S\s]*name.*\w+|');
+    $this->assertPattern('|ld\+json[\S\s]*publisher[\S\s]*type.*Organization|');
+    $this->assertPattern('|ld\+json[\S\s]*publisher[\S\s]*name.*AMP Test|');
 
     // Configure AMP field formatters.
     $this->drupalGet('admin/structure/types/manage/article/display/amp');

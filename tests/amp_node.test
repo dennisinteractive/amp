@@ -18,7 +18,7 @@ class AmpNodeTestCase extends DrupalWebTestCase {
 
   protected function setUp() {
     // Enable AMP module.
-    parent::setUp('field_ui', 'amp_test');
+    parent::setUp('field_ui', 'token', 'amp_test');
 
     // Create Admin user.
     $this->admin_user = $this->drupalCreateUser(array(

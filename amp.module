@@ -1507,6 +1507,10 @@ function amp_deliver_html_page($page_callback_result) {
         watchdog('amp', "$heading <pre>" . $amp->warningsHumanHtml() . '</pre>');
       }
 
+      if (strpos($full_html_processed, 'data-amp-bind-')) {
+        $full_html_processed = _amp_bind_attr_replace($full_html_processed);
+      }
+
       $final_html = $full_html_processed;
     }
 
@@ -1725,4 +1729,38 @@ function amp_ctools_render_alter($info, $page, $context) {
         break;
     }
   }
+}
+
+/**
+ * Replace binding placeholders with attribute.
+ * For example, replace data-amp-bind-src with [src].
+ *
+ * @param $full_html_processed
+ *
+ * @return string
+ */
+function _amp_bind_attr_replace($full_html_processed) {
+  // Find all the data-amp-bind attributes
+  preg_match_all('/data\-amp\-bind\-.*=/', $full_html_processed, $tags);
+
+  if (empty($tags)) {
+    return;
+  }
+
+  // Loop through them and create the replacements array.
+  foreach ($tags as $lines) {
+    foreach ($lines as $line) {
+      preg_match_all('/data\-amp\-bind\-(.*?)[=]/', $line, $replacement);
+      $replacements[] = $replacement;
+    }
+  }
+
+  // Do the replacements.
+  if (isset($replacements)) {
+    foreach ($replacements as $replacement) {
+      $full_html_processed = str_replace($replacement[0][0], '[' . $replacement[1][0] . ']=', $full_html_processed);
+    }
+  }
+
+  return $full_html_processed;
 }

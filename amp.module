@@ -1522,9 +1522,9 @@ function amp_deliver_html_page($page_callback_result) {
         watchdog('amp', "$heading <pre>" . $amp->warningsHumanHtml() . '</pre>');
       }
 
-      drupal_alter('amp_final_html', $final_html);
-
       $final_html = $full_html_processed;
+
+      drupal_alter('amp_final_html', $final_html);
     }
 
     // Output html to browser

@@ -20,5 +20,6 @@
         width="<?php print $width; ?>"
         data-slot="<?php print $slot; ?>"
         json='<?php print $amp_ad_json; ?>'
-  >
+        rtc-config='<?php print $rtc_config; ?>'
+>
 </amp-ad>

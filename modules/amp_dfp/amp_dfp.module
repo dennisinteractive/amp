@@ -75,6 +75,20 @@ function amp_dfp_preprocess_amp_dfp_tag(&$variables) {
 
   $to_json = array('targeting' => $targeting);
   $variables['amp_ad_json'] = drupal_json_encode($to_json);
+
+  //@todo temporarily hard coded until we have the configuration on the form
+  $rtc_config = array(
+    'vendors' => array(
+      'vendorA' => array('slot_id' => 1),
+      'vendorB' => array('page_id' => 2),
+    ),
+    'urls' => array(
+      'https://www.AmpPublisher.biz/targetingA',
+      'https://www.AmpPublisher.biz/targetingB',
+    ),
+    'timeoutMillis' => 750,
+  );
+  $variables['rtc_config'] = drupal_json_encode($rtc_config);
 }
 
 /**

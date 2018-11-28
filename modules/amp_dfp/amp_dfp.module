@@ -1,4 +1,7 @@
 <?php
+
+include_once 'includes/amp_rtc_config.admin.inc';
+include_once 'includes/RealTimeConfiguration.php';
 /**
  * @file
  *  AMP integration for the DFP module.
@@ -26,6 +29,14 @@ function amp_dfp_theme($existing, $type, $theme, $path) {
         'slug' => NULL,
       ),
       'template' => 'amp-dfp-tag',
+    ),
+    'rtc_macro_settings' => array(
+      'render element' => 'form',
+      'file' => 'includes/amp_rtc_config.admin.inc',
+    ),
+    'rtc_url_settings' => array(
+      'render element' => 'form',
+      'file' => 'includes/amp_rtc_config.admin.inc',
     ),
   );
 
@@ -76,19 +87,13 @@ function amp_dfp_preprocess_amp_dfp_tag(&$variables) {
   $to_json = array('targeting' => $targeting);
   $variables['amp_ad_json'] = drupal_json_encode($to_json);
 
-  //@todo temporarily hard coded until we have the configuration on the form
-  $rtc_config = array(
-    'vendors' => array(
-      'vendorA' => array('slot_id' => 1),
-      'vendorB' => array('page_id' => 2),
-    ),
-    'urls' => array(
-      'https://www.AmpPublisher.biz/targetingA',
-      'https://www.AmpPublisher.biz/targetingB',
-    ),
-    'timeoutMillis' => 750,
-  );
-  $variables['rtc_config'] = drupal_json_encode($rtc_config);
+  $rtc_config = new RealTimeConfiguration(
+    $tag->settings['rtc_config']['vendor'],
+    $tag->settings['rtc_config']['urls'],
+    $tag->settings['rtc_config']['timeoutMillis']
+    );
+
+  $variables['rtc_config'] = drupal_json_encode($rtc_config->jsonSerialize());
 }
 
 /**
@@ -118,6 +123,8 @@ function amp_dfp_form_ctools_export_ui_edit_item_form_alter(&$form, &$form_state
       '#default_value' => isset($tag->settings['amp_size']) ? $tag->settings['amp_size'] : '',
     );
 
+    _amp_rtc_configuration_form($form, $form_state, $tag);
+    
     $form['#validate'][] = 'amp_dfp_ctools_export_ui_edit_item_form_validate';
     array_unshift($form['#submit'], 'amp_dfp_ctools_export_ui_edit_item_form_submit');
   }

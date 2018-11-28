@@ -1,5 +1,6 @@
 <?php
-include 'MacroHelper.php';
+require_once 'MacroHelper.php';
+require_once 'interfaces/FormatHelper.php';
 
 class VendorHelper implements FormatHelper{
   public static function format($vendors) {

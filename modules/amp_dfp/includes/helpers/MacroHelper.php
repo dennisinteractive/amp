@@ -1,5 +1,5 @@
 <?php
-include 'FormatHelper.php';
+require_once 'interfaces/FormatHelper.php';
 
 class MacroHelper implements FormatHelper{
    public static function format($macros) {

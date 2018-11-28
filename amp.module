@@ -1341,12 +1341,12 @@ function _amp_get_amp_js_list() {
   $amp_js = array(
     // Ads and analytics.
     'amp-ad' => 'https://cdn.ampproject.org/v0/amp-ad-0.1.js',
-    'amp-sticky-ad' => 'https://cdn.ampproject.org/v0/amp-sticky-ad-1.0.js',
     'amp-ad-exit' => 'https://cdn.ampproject.org/v0/amp-ad-exit-0.1.js',
     'amp-analytics' => 'https://cdn.ampproject.org/v0/amp-analytics-0.1.js',
     'amp-auto-ads' => 'https://cdn.ampproject.org/v0/amp-auto-ads-0.1.js',
     'amp-call-tracking' => 'https://cdn.ampproject.org/v0/amp-call-tracking-0.1.js',
     'amp-experiment' => 'https://cdn.ampproject.org/v0/amp-experiment-0.1.js',
+    'amp-sticky-ad' => 'https://cdn.ampproject.org/v0/amp-sticky-ad-1.0.js',
 
     // Dynamic content.
     'amp-access-laterpay' => 'https://cdn.ampproject.org/v0/amp-access-laterpay-0.1.js',

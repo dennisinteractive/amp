@@ -2,6 +2,8 @@
 include 'helpers/VendorHelper.php';
 include 'helpers/UrlHelper.php';
 
+
+
 class RealTimeConfiguration implements JsonSerializable {
   
   private $vendors;

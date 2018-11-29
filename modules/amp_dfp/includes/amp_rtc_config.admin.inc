@@ -1,10 +1,9 @@
 <?php
 
 function _amp_rtc_configuration_form(&$form, &$form_state, $tag) {
-  //var_dump($form_state['input']['rtc_config']);
+  
   $form['#tree'] = TRUE;
-  dpm($tag);
-  //dpm($form);
+  
   $form['rtc_config'] = array(
     '#type' => 'fieldset',
     '#title' => t('RTC configuration'),
@@ -22,19 +21,16 @@ function _amp_rtc_configuration_form(&$form, &$form_state, $tag) {
     '#prefix' => '<div id="rtc-vendor-wrapper">',
     '#suffix' => '</div>',
     '#parents' => array('rtc_config', 'wrapper'),
-    //'#theme' => 'amp_vendor_settings',
   );
-  //dpm(count($tag->settings['rtc_config']['vendor']));
+  
   if (isset($tag->settings['rtc_config']['vendor']) && count($tag->settings['rtc_config']['vendor']) > $form_state['num_vendors']) {
     $form_state['num_vendors'] = count($tag->settings['rtc_config']['vendor']);
   }
   for ($i = 0; $i < $form_state['num_vendors']; $i++) {
-    //dpm('Loop' . $i);
-    //dpm($form['rtc_config']['wrapper']['vendor']);
+
     if (empty($form_state['num_macros'][$i])) {
       $form_state['num_macros'][$i] = 1;
     }
-    //dd("Vendor: ".$i." Macros: " . $form_state['num_macros'][$i]);
 
     $form['rtc_config']['wrapper']['vendor'][$i] = array(
       '#type' => 'fieldset',
@@ -44,7 +40,7 @@ function _amp_rtc_configuration_form(&$form, &$form_state, $tag) {
       '#description' => t('RTC vendor configuration.'),
       '#parents' => array('rtc_config', 'wrapper', 'vendor'),
     );
-    //$form['rtc_config']['wrapper']['vendor'] = array("vendor_name" => array(), 'macros' => array());
+
     $form['rtc_config']['wrapper']['vendor'][$i]['vendor_name'] = array(
       '#type' => 'textfield',
       '#title' => t('Vendor name'),
@@ -75,13 +71,11 @@ function _amp_rtc_configuration_form(&$form, &$form_state, $tag) {
     for ($j = 0; $j < $form_state['num_macros'][$i]; $j++) {
       $form['rtc_config']['wrapper']['vendor'][$i]['macros'][$j]['macro'] = array(
         '#type' => 'textfield',
-        //  '#title' => t('Vendor macro key'),
         '#value' => isset($tag->settings['rtc_config']['vendor'][$i]['macros'][$j]['macro']) ? $tag->settings['rtc_config']['vendor'][$i]['macros'][$j]['macro'] : '',
         '#parents' => array('rtc_config', 'wrapper', 'vendor', $i, 'macros', $j, 'macro'),
       );
       $form['rtc_config']['wrapper']['vendor'][$i]['macros'][$j]['value'] = array(
         '#type' => 'textfield',
-        // '#title' => t('Vendor macro value'),
         '#value' => isset($tag->settings['rtc_config']['vendor'][$i]['macros'][$j]['value']) ? $tag->settings['rtc_config']['vendor'][$i]['macros'][$j]['value'] : '',
         '#parents' => array('rtc_config', 'wrapper', 'vendor', $i, 'macros', $j, 'value'),
       );
@@ -96,8 +90,7 @@ function _amp_rtc_configuration_form(&$form, &$form_state, $tag) {
       '#ajax' => array(
         'callback' => '_amp_rtc_macro_form_elements_callback',
         'wrapper' => 'rtc-macro-table-' . $i,
-      # 'effect' => 'fade',
-      #  'file' => 'plugins/export_ui/dfp_ctools_export_ui.inc',
+        'effect' => 'fade',
       ),
     );
   }
@@ -108,7 +101,6 @@ function _amp_rtc_configuration_form(&$form, &$form_state, $tag) {
     '#collapsible' => TRUE,
     '#description' => t('RTC url configuration.'),
   );
-
 
   if (empty($form_state['num_urls'])) {
     $form_state['num_urls'] = 1;
@@ -124,18 +116,15 @@ function _amp_rtc_configuration_form(&$form, &$form_state, $tag) {
   if (isset($tag->settings['rtc_config']['urls']) && count($tag->settings['rtc_config']['urls']) > $form_state['num_urls']) {
     $form_state['num_urls'] = count($tag->settings['rtc_config']['urls']);
   }
+
   for ($k = 0; $k < $form_state['num_urls']; $k++) {
     $form['rtc_config']['urls']['url_wrapper'][$k]['rtc_url'] = array(
       '#type' => 'textfield',
-      //'#title' => t('Vendor url'),
-      // '#description' => t('RTC vendor url.'),
       '#value' => isset($tag->settings['rtc_config']['urls'][$k]['rtc_url']) ? $tag->settings['rtc_config']['urls'][$k]['rtc_url'] : '',
     );
 
     $form['rtc_config']['urls']['url_wrapper'][$k]['rtc_error_url'] = array(
       '#type' => 'textfield',
-      //'#title' => t('Vendor error reporting url (optional)'),
-      //'#description' => t('RTC vendor error reporting url.'),
       '#value' => isset($tag->settings['rtc_config']['urls'][$k]['rtc_error_url']) ? $tag->settings['rtc_config']['urls'][$k]['rtc_error_url'] : '',
     );
   }
@@ -172,7 +161,6 @@ function _amp_rtc_configuration_form(&$form, &$form_state, $tag) {
       'wrapper' => 'rtc-vendor-wrapper',
       'effect' => 'fade',
       'method' => 'append',
-    #  'file' => 'plugins/export_ui/dfp_ctools_export_ui.inc',
     ),
   );
   $form['rtc_config']['button_wrapper']['more_rtc_url'] = array(
@@ -182,14 +170,12 @@ function _amp_rtc_configuration_form(&$form, &$form_state, $tag) {
     '#ajax' => array(
       'callback' => '_amp_rtc_urls_form_elements_callback',
       'wrapper' => 'rtc-url-wrapper',
-    # 'effect' => 'fade',
-    #  'file' => 'plugins/export_ui/dfp_ctools_export_ui.inc',
+      'effect' => 'fade',
     ),
   );
   $form['#validate'][] = '_amp_rtc_config_validate';
-  //$form['#submit'][] = '_amp_rtc_config_submit';
+
   array_unshift($form['#submit'], '_amp_rtc_config_submit');
-  //dpm($form);
 }
 
 /**
@@ -209,6 +195,9 @@ function theme_rtc_macro_settings($variables) {
   return theme('table', array('header' => $headers, 'rows' => $rows)); // . $more_button;
 }
 
+/**
+ * Theme function for the "url" form.
+ */
 function theme_rtc_url_settings($variables) {
   $form = $variables['form'];
   $headers = array(t('Url'), t('Error reporting url (optional)'));
@@ -226,8 +215,6 @@ function _amp_rtc_vendor_form_submit(&$form, &$form_state) {
   $form_state['num_vendors'] ++;
 
   $form_state['rebuild'] = TRUE;
-  //dd($form_state['num_vendors']);
-  //dd($form_state['triggering_element']);
 }
 
 function _amp_rtc_vendor_form_elements_callback(&$form, &$form_state) {
@@ -236,18 +223,11 @@ function _amp_rtc_vendor_form_elements_callback(&$form, &$form_state) {
 
 function _amp_rtc_config_validate(&$form, &$form_state) {
   $vendors = $form_state['input']['rtc_config']['wrapper']['vendor'];
-  //dpm($form_state);
-  //dpm($form);
   $urls = $form_state['input']['rtc_config']['urls']['url_wrapper'];
   for ($i = 0; $i < count($vendors); $i++) {
-    if (strlen($form_state['input']['rtc_config']['wrapper']['vendor'][$i]['vendor_name']) < 1) {
-      //dpm($vendors[$i]['vendor_name']);
-    }
 
     if (!empty($vendors[$i]['macro'])) {
-      //dpm($form_state);
       if (empty($vendors[$i]['vendor_name'])) {
-
         form_set_error('vendor_name', 'Vendor cannot be empty.');
       }
       for ($j = 0; $j < count($vendors[$i]['macro']); $j++) {
@@ -270,7 +250,6 @@ function _amp_rtc_config_validate(&$form, &$form_state) {
 }
 
 function _amp_rtc_macro_form_submit(&$form, &$form_state) {
-  //dpm($form_state);
   $form_state['rtc_config'] = $form_state['input']['rtc_config'];
   $form_state['num_macros'][$form_state['input']['vendor_key']] ++;
   $form_state['rebuild'] = TRUE;
@@ -284,7 +263,6 @@ function _amp_rtc_urls_form_submit(&$form, &$form_state) {
   $form_state['rtc_config'] = $form_state['input']['rtc_config'];
   $form_state['num_urls'] ++;
   $form_state['rebuild'] = TRUE;
-  //dd($form_state['triggering_element']);
 }
 
 function _amp_rtc_urls_form_elements_callback(&$form, &$form_state) {
@@ -292,7 +270,6 @@ function _amp_rtc_urls_form_elements_callback(&$form, &$form_state) {
 }
 
 function _amp_rtc_config_submit(&$form, &$form_state) {
-  //var_dump($form_state);
   $rtc_config['vendor'] = $form_state['input']['rtc_config']['wrapper']['vendor'];
   $rtc_config['urls'] = $form_state['input']['rtc_config']['urls']['url_wrapper'];
   $rtc_config['timeoutMillis'] = $form_state['input']['rtc_config']['timeoutMillis'];

@@ -2,6 +2,7 @@
 
 include_once 'includes/amp_rtc_config.admin.inc';
 include_once 'includes/RealTimeConfiguration.php';
+
 /**
  * @file
  *  AMP integration for the DFP module.
@@ -86,14 +87,15 @@ function amp_dfp_preprocess_amp_dfp_tag(&$variables) {
 
   $to_json = array('targeting' => $targeting);
   $variables['amp_ad_json'] = drupal_json_encode($to_json);
-
+  
   $rtc_config = new RealTimeConfiguration(
     $tag->settings['rtc_config']['vendor'],
     $tag->settings['rtc_config']['urls'],
     $tag->settings['rtc_config']['timeoutMillis']
     );
-
-  $variables['rtc_config'] = drupal_json_encode($rtc_config->jsonSerialize());
+  
+    $variables['rtc_config'] = drupal_json_encode($rtc_config->jsonSerialize());
+  
 }
 
 /**

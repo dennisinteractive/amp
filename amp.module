@@ -5,6 +5,7 @@
  * Contains amp.module.
  */
 
+require_once DRUPAL_ROOT . '/../../vendor/autoload.php';
 require_once dirname(__FILE__) . '/includes/amp.db.inc';
 
 use Lullabot\AMP\AMP;

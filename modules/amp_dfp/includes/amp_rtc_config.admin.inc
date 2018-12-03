@@ -2,11 +2,10 @@
 
 function _amp_rtc_configuration_form(&$form, &$form_state, $tag) {
   
-  $form['#tree'] = TRUE;
-  
   $form['rtc_config'] = array(
     '#type' => 'fieldset',
     '#title' => t('RTC configuration'),
+    '#tree' => TRUE,
     '#collapsible' => TRUE,
     '#collapsed' => FALSE,
     '#group' => 'settings',
@@ -69,6 +68,7 @@ function _amp_rtc_configuration_form(&$form, &$form_state, $tag) {
     }
     
     for ($j = 0; $j < $form_state['num_macros'][$i]; $j++) {
+
       $form['rtc_config']['wrapper']['vendor'][$i]['macros'][$j]['macro'] = array(
         '#type' => 'textfield',
         '#value' => isset($tag->settings['rtc_config']['vendor'][$i]['macros'][$j]['macro']) ? $tag->settings['rtc_config']['vendor'][$i]['macros'][$j]['macro'] : '',
@@ -91,6 +91,7 @@ function _amp_rtc_configuration_form(&$form, &$form_state, $tag) {
         'callback' => '_amp_rtc_macro_form_elements_callback',
         'wrapper' => 'rtc-macro-table-' . $i,
         'effect' => 'fade',
+        'method' => 'replace',
       ),
     );
   }
@@ -174,9 +175,10 @@ function _amp_rtc_configuration_form(&$form, &$form_state, $tag) {
     ),
   );
   $form['#validate'][] = '_amp_rtc_config_validate';
-
+ // $form['#submit'][] = '_amp_rtc_config_submit';
   array_unshift($form['#submit'], '_amp_rtc_config_submit');
-}
+  dpm($form);
+  }
 
 /**
  * Theme function for the "macro" form.
@@ -218,10 +220,12 @@ function _amp_rtc_vendor_form_submit(&$form, &$form_state) {
 }
 
 function _amp_rtc_vendor_form_elements_callback(&$form, &$form_state) {
-  return $form['rtc_config']['wrapper']['vendor'];
+  $key = $form_state['input']['vendor_key'] + 1;
+  return $form['rtc_config']['wrapper']['vendor'][$key];
 }
 
 function _amp_rtc_config_validate(&$form, &$form_state) {
+  /*
   $vendors = $form_state['input']['rtc_config']['wrapper']['vendor'];
   $urls = $form_state['input']['rtc_config']['urls']['url_wrapper'];
   for ($i = 0; $i < count($vendors); $i++) {
@@ -246,26 +250,54 @@ function _amp_rtc_config_validate(&$form, &$form_state) {
         form_set_error('value', 'Macro value cannot be empty.');
       }
     }
-  }
+  } */
 }
 
 function _amp_rtc_macro_form_submit(&$form, &$form_state) {
+  //dpm($form_state['values']['rtc_config']);
+  //dpm($form_state['rtc_config']);
   $form_state['rtc_config'] = $form_state['input']['rtc_config'];
+  //dpm($form_state['rtc_config']);
+  //$key =  $form_state['num_macros'][$form_state['input']['vendor_key']] - 1;
+  //$form['rtc_config']['vendor'][$form_state['input']['vendor_key']]['macros'][$key]['macro']['#value'] = $form_state['input']['rtc_config']['vendor'][$form_state['input']['vendor_key']]['macros'][$key]['macro'];
   $form_state['num_macros'][$form_state['input']['vendor_key']] ++;
   $form_state['rebuild'] = TRUE;
 }
 
 function _amp_rtc_macro_form_elements_callback(&$form, &$form_state) {
+  $form_state['rtc_config'] = $form_state['input']['rtc_config'];
+  
+  //$key = 0;//$form_state['num_macros'][$form_state['input']['vendor_key']];
+  //dd($key);
+  //dd($form_state['rtc_config']['wrapper']['vendor'][$form_state['input']['vendor_key']]['macros'][$key]);
+  
+  $macros = count($form['rtc_config']['wrapper']['vendor'][$form_state['input']['vendor_key']]['macros']);
+  for($i = 0; $i < $macros; $i++) {
+    if(isset($form_state['input']['rtc_config']['wrapper']['vendor'][$form_state['input']['vendor_key']]['macros'][$i]) && !empty($form_state['input']['rtc_config']['wrapper']['vendor'][$form_state['input']['vendor_key']]['macros'][$i]['macro'])) {
+      $form['rtc_config']['wrapper']['vendor'][$form_state['input']['vendor_key']]['macros'][$i]['macro']['#value'] = $form_state['input']['rtc_config']['wrapper']['vendor'][$form_state['input']['vendor_key']]['macros'][$i]['macro'];
+      $form['rtc_config']['wrapper']['vendor'][$form_state['input']['vendor_key']]['macros'][$i]['value']['#value'] = $form_state['input']['rtc_config']['wrapper']['vendor'][$form_state['input']['vendor_key']]['macros'][$i]['value'];
+    }
+    
+  }
+  
   return $form['rtc_config']['wrapper']['vendor'][$form_state['input']['vendor_key']]['macros'];
 }
 
 function _amp_rtc_urls_form_submit(&$form, &$form_state) {
+  dpm($form_state['input']['rtc_config']);
   $form_state['rtc_config'] = $form_state['input']['rtc_config'];
   $form_state['num_urls'] ++;
   $form_state['rebuild'] = TRUE;
 }
 
 function _amp_rtc_urls_form_elements_callback(&$form, &$form_state) {
+  $urls = count($form['rtc_config']['wrapper']['vendor'][$form_state['input']['vendor_key']]['macros']);
+  for($i = 0; $i < $urls; $i++) {
+    if(isset($form_state['input']['rtc_config']['urls']['url_wrapper'][$i]['rtc_url']) && !empty($form_state['input']['rtc_config']['urls']['url_wrapper'][$i]['rtc_url'])) {
+      $form['rtc_config']['urls']['url_wrapper'][$i]['rtc_url']['#value'] = $form_state['input']['rtc_config']['urls']['url_wrapper'][$i]['rtc_url'];
+      $form['rtc_config']['urls']['url_wrapper'][$i]['rtc_error_url']['#value'] = $form_state['input']['rtc_config']['urls']['url_wrapper'][$i]['rtc_error_url'];
+    }
+  }
   return $form['rtc_config']['urls']['url_wrapper'];
 }
 

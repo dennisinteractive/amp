@@ -87,15 +87,16 @@ function amp_dfp_preprocess_amp_dfp_tag(&$variables) {
 
   $to_json = array('targeting' => $targeting);
   $variables['amp_ad_json'] = drupal_json_encode($to_json);
-  
-  $rtc_config = new RealTimeConfiguration(
-    $tag->settings['rtc_config']['vendor'],
-    $tag->settings['rtc_config']['urls'],
-    $tag->settings['rtc_config']['timeoutMillis']
-    );
-  
+  $variables['rtc_config'] = '';
+  if(isset($tag->settings['rtc_config'])) {
+    $rtc_config = new RealTimeConfiguration(
+      $tag->settings['rtc_config']['vendor'],
+      $tag->settings['rtc_config']['urls'],
+      $tag->settings['rtc_config']['timeout']
+      );
+
     $variables['rtc_config'] = drupal_json_encode($rtc_config->jsonSerialize());
-  
+  }
 }
 
 /**

@@ -1,8 +1,4 @@
 <?php
-include 'helpers/VendorHelper.php';
-include 'helpers/UrlHelper.php';
-
-
 
 class RealTimeConfiguration implements JsonSerializable {
   
@@ -11,8 +7,8 @@ class RealTimeConfiguration implements JsonSerializable {
   private $timeout;
   
   public function __construct($vendors, $urls, $timeout) {
-    $this->vendors = VendorHelper::format($vendors);
-    $this->urls = UrlHelper::format($urls);
+    $this->vendors = $this->formatVendor($vendors);
+    $this->urls = $this->formatUrls($urls);
     $this->timeout = $timeout;
   }
   
@@ -27,27 +23,24 @@ class RealTimeConfiguration implements JsonSerializable {
   public function timeout() {
     return $this->timeout;
   }
-
-  /*
+  
   private function formatVendor($vendors) {
     $formatted = array();
     for($i= 0; $i < count($vendors); $i++) {
-      $formatted = array($vendors[$i]['vendor_name'] => $this->formatMacros($vendors[$i]['macros']));
+      $formatted[$vendors[$i]['vendor_name']] = $this->formatMacros($vendors[$i]['macros']);
     }
+    
     return $formatted;
   }
-  */
-  /*
+  
   private function formatMacros($macros) {
     $formatted = array();
     for($i= 0; $i < count($macros); $i++) {
-      $formatted = array($macros[$i]['macro'] => $macros[$i]['value']);
+      $formatted[$macros[$i]['macro']] = $macros[$i]['value'] ;
     }
     return $formatted;
   }
-   * 
-   */
-/*  
+   
   private function formatUrls($urls) {
     $formatted = array();
     for($i=0; $i < count($urls); $i++) {
@@ -62,7 +55,7 @@ class RealTimeConfiguration implements JsonSerializable {
     }
     return $formatted;
   }
-*/
+  
   public function jsonSerialize() {
     return array(
     'vendors' => $this->vendors,

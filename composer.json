@@ -11,6 +11,6 @@
     "source": "http://cgit.drupalcode.org/amp"
   },
   "require": {
-    "lullabot/amp": "dev-amp-sanitizer"
+    "lullabot/amp": "dev-amphtml-generator"
   }
 }

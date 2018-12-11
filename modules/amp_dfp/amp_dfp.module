@@ -90,9 +90,9 @@ function amp_dfp_preprocess_amp_dfp_tag(&$variables) {
   $variables['rtc_config'] = '';
   if(isset($tag->settings['rtc_config']) && !is_null($tag->settings['rtc_config']['timeout'])) {
     $rtc_config = new RealTimeConfiguration(
-      $tag->settings['rtc_config']['vendor'],
-      $tag->settings['rtc_config']['urls'],
-      $tag->settings['rtc_config']['timeout']
+        $tag->settings['rtc_config']['vendor'],
+        $tag->settings['rtc_config']['urls'],
+        $tag->settings['rtc_config']['timeout']
       );
 
     $variables['rtc_config'] = drupal_json_encode($rtc_config->jsonSerialize());

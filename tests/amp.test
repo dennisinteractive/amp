@@ -6,6 +6,8 @@
  */
 
 class AmpTestCase extends DrupalWebTestCase {
+  protected $profile = 'standard';
+
   protected $admin_user;
 
   public static function getInfo() {
@@ -28,8 +30,8 @@ class AmpTestCase extends DrupalWebTestCase {
     );
     $this->drupalLogin($this->admin_user);
 
-    // Install the AMP theme.
-    theme_enable(array('amptheme', 'ampsubtheme_example'));
+    // @todo Install the AMP theme.
+    //theme_enable(array('amptheme', 'ampsubtheme_example'));
   }
 
   /**

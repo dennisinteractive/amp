@@ -75,43 +75,31 @@ class AmpDFPTestCase extends DrupalWebTestCase {
 
     $this->drupalGet('admin/structure/dfp_ads/list/amp_ad/edit');
     
-     
-    $edit["rtc_config[wrapper][vendor][0][macros][1][macro]"] = 'Simple test 1 macro 2';
-    $edit["rtc_config[wrapper][vendor][0][macros][1][value]"] = 'Simple test 1 macro value 2';
-    
     $this->drupalPostAJAX(
       NULL,
-      $edit,
+      array(),
       array('op' => t('Add vendor macro')),
+      );
+    
+    $edit["rtc_config[wrapper][vendor][0][macros][1][macro]"] = 'Simple test 1 macro 2';
+    $edit["rtc_config[wrapper][vendor][0][macros][1][value]"] = 'Simple test 1 macro value 2';
+      
+    $this->drupalPostAJAX(
       NULL,
       array(),
-      array(),
-      NULL,
-      NULL);
-       
+      array('op' => t('Add vendor')),
+      );
+    
     $edit["rtc_config[wrapper][vendor][1][vendor_name]"] = 'Simple test vendor 2';
     $edit["rtc_config[wrapper][vendor][1][macros][0][macro]"] = 'Simple test 2 macro 1';
     $edit["rtc_config[wrapper][vendor][1][macros][0][value]"] = 'Simple test 2 macro value 1';
-    $this->drupalPostAJAX(
-      NULL,
-      $edit,
-      array('op' => t('Add vendor')),
-      NULL,
-      array(),
-      array(),
-      NULL,
-      NULL);
     
-    $edit["rtc_config[urls][url_wrapper][1][rtc_url]"] = 'Simple test url 2';
     $this->drupalPostAJAX(
       NULL,
-      $edit,
+      array(),
       array('op' => t('Add url')),
-      NULL,
-      array(),
-      array(),
-      NULL,
-      NULL);
+      );
+    $edit["rtc_config[urls][url_wrapper][1][rtc_url]"] = 'Simple test url 2';
     $this->drupalPost(NULL, $edit, t('Save'));
     
     // Create Sticky DFP tag.

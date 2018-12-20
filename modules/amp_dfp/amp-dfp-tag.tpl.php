@@ -24,7 +24,7 @@
         width="<?php print $width; ?>"
         data-slot="<?php print $slot; ?>"
         json='<?php print $amp_ad_json; ?>'
-        <?php if(!empty($rtc_config)): ?>
+        <?php if (!empty($rtc_config)): ?>
         rtc-config='<?php print $rtc_config; ?>'
         <?php endif ?>
 >

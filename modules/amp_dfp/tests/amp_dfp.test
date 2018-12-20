@@ -79,7 +79,11 @@ class AmpDFPTestCase extends DrupalWebTestCase {
       NULL,
       array(),
       array('op' => t('Add vendor macro')),
-      );
+      NULL,
+      array(),
+      array(),
+      NULL,
+      NULL);
     
     $edit["rtc_config[wrapper][vendor][0][macros][1][macro]"] = 'Simple test 1 macro 2';
     $edit["rtc_config[wrapper][vendor][0][macros][1][value]"] = 'Simple test 1 macro value 2';
@@ -88,7 +92,11 @@ class AmpDFPTestCase extends DrupalWebTestCase {
       NULL,
       array(),
       array('op' => t('Add vendor')),
-      );
+      NULL,
+      array(),
+      array(),
+      NULL,
+      NULL);
     
     $edit["rtc_config[wrapper][vendor][1][vendor_name]"] = 'Simple test vendor 2';
     $edit["rtc_config[wrapper][vendor][1][macros][0][macro]"] = 'Simple test 2 macro 1';
@@ -98,7 +106,11 @@ class AmpDFPTestCase extends DrupalWebTestCase {
       NULL,
       array(),
       array('op' => t('Add url')),
-      );
+      NULL,
+      array(),
+      array(),
+      NULL,
+      NULL);
     $edit["rtc_config[urls][url_wrapper][1][rtc_url]"] = 'Simple test url 2';
     $this->drupalPost(NULL, $edit, t('Save'));
     

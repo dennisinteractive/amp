@@ -86,7 +86,7 @@ class AmpDFPTestCase extends DrupalWebTestCase {
       NULL);
     
     $edit["rtc_config[wrapper][vendor][0][macros][1][macro]"] = 'Simple test 1 macro 2';
-    $edit["rtc_config[wrapper][vendor][0][macros][1][value]"] = 'Simple test 1 macro value 2'
+    $edit["rtc_config[wrapper][vendor][0][macros][1][value]"] = 'Simple test 1 macro value 2';
       
     $this->drupalPostAJAX(
       NULL,

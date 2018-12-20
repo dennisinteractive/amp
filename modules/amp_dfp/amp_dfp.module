@@ -196,7 +196,7 @@ function amp_dfp_form_ctools_export_ui_edit_item_form_alter(&$form, &$form_state
       '#weight' => 0,
       '#default_value' => isset($tag->settings['amp_sticky']) ? $tag->settings['amp_sticky'] : 0,
     );
-
+    // Adds rtc to the dfp ad form.
     _amp_dfp_rtc_configuration_form($form, $form_state, $tag);
 
     $form['#validate'][] = 'amp_dfp_ctools_export_ui_edit_item_form_validate';

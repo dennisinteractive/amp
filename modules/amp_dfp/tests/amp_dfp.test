@@ -63,27 +63,56 @@ class AmpDFPTestCase extends DrupalWebTestCase {
       'targeting[0][target]' => 'position',
       'targeting[0][value]' => '1',
     );
+    
+    $this->drupalPostAJAX(
+      $path,
+      $edit,
+       array('op' => t('Add vendor macro')),
+      $ajax_path = NULL,
+      array $options = array(),
+      array $headers = array(),
+      $form_html_id = NULL,
+      $ajax_settings = NULL);
+    
+    $this->drupalPostAJAX(
+      $path,
+      $edit,
+       array('op' => t('Add vendor')),
+      $ajax_path = NULL,
+      array $options = array(),
+      array $headers = array(),
+      $form_html_id = NULL,
+      $ajax_settings = NULL);
+    
+    $this->drupalPostAJAX(
+      $path,
+      $edit,
+       array('op' => t('Add url')),
+      $ajax_path = NULL,
+      array $options = array(),
+      array $headers = array(),
+      $form_html_id = NULL,
+      $ajax_settings = NULL);
+    
     $edit["rtc_config[wrapper][vendor][0][vendor_name]"] = 'Simple test vendor';
     $edit["rtc_config[wrapper][vendor][0][macros][0][macro]"] = 'Simple test 1 macro';
     $edit["rtc_config[wrapper][vendor][0][macros][0][value]"] = 'Simple test 1 macro value';
-//    $this->drupalPostAJAX(NULL, array(), array(
-//              $button_name => t('Add vendor macro'),
-//            ));
-//    $edit["rtc_config[wrapper][vendor][0][macros][1][macro]"] = 'Simple test 1 macro 2';
-//    $edit["rtc_config[wrapper][vendor][0][macros][1][value]"] = 'Simple test 1 macro value 2';
-//    $this->drupalPostAJAX(NULL, array(), array(
-//              $button_name => t('Add vendor'),
-//            ));
-//    $edit["rtc_config[wrapper][vendor][1][vendor_name]"] = 'Simple test vendor 2';
-//    $edit["rtc_config[wrapper][vendor][1][macros][0][macro]"] = 'Simple test 2 macro 1';
-//    $edit["rtc_config[wrapper][vendor][1][macros][0][value]"] = 'Simple test 2 macro value 1';
+    
+    $edit["rtc_config[wrapper][vendor][0][macros][1][macro]"] = 'Simple test 1 macro 2';
+    $edit["rtc_config[wrapper][vendor][0][macros][1][value]"] = 'Simple test 1 macro value 2';
+    $this->drupalPostAJAX(NULL, array(), array(
+              $button_name => t('Add vendor'),
+            ));
+    $edit["rtc_config[wrapper][vendor][1][vendor_name]"] = 'Simple test vendor 2';
+    $edit["rtc_config[wrapper][vendor][1][macros][0][macro]"] = 'Simple test 2 macro 1';
+    $edit["rtc_config[wrapper][vendor][1][macros][0][value]"] = 'Simple test 2 macro value 1';
 
     $edit["rtc_config[urls][url_wrapper][0][rtc_url]"] = 'Simple test url 1';
     $edit["rtc_config[urls][url_wrapper][0][rtc_error_url]"] = 'Simple test error url 1';
-//    $this->drupalPostAJAX(NULL, array(), array(
-//              $button_name => t('Add url'),
-//            ));
-//    $edit["rtc_config[urls][url_wrapper][1][rtc_url]"] = 'Simple test url 2';
+    $this->drupalPostAJAX(NULL, array(), array(
+              $button_name => t('Add url'),
+            ));
+    $edit["rtc_config[urls][url_wrapper][1][rtc_url]"] = 'Simple test url 2';
     $edit["rtc_config[timeout]"] = '9999';
 
     $this->drupalPost(NULL, $edit, t('Save'));

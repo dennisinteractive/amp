@@ -1,6 +1,16 @@
 <?php
+/**
+ * @file todo
+ */
 
-function _amp_rtc_build_urls(&$form, &$form_state, $tag) {
+/**
+ * todo
+ *
+ * @param $form
+ * @param $form_state
+ * @param $tag
+ */
+function _amp_dfp_rtc_build_urls(&$form, &$form_state, $tag) {
   $form['rtc_config']['urls'] = array(
     '#type' => 'fieldset',
     '#title' => t('Urls'),
@@ -45,9 +55,9 @@ function _amp_rtc_build_urls(&$form, &$form_state, $tag) {
   $form['rtc_config']['url_button']['more_rtc_url'] = array(
     '#type' => 'submit',
     '#value' => t('Add url'),
-    '#submit' => array('_amp_rtc_urls_form_submit'),
+    '#submit' => array('_amp_dfp_rtc_urls_form_submit'),
     '#ajax' => array(
-      'callback' => '_amp_rtc_urls_form_elements_callback',
+      'callback' => '_amp_dfp_rtc_urls_form_elements_callback',
       'wrapper' => 'rtc-url-wrapper',
       'effect' => 'fade',
     ),
@@ -64,19 +74,23 @@ function theme_rtc_url_settings($variables) {
 
   foreach (element_children($form) as $key) {
     if (is_numeric($key) && !empty($form[$key]['rtc_url'])) {
-      $rows[] = array(drupal_render($form[$key]['rtc_url']), drupal_render($form[$key]['rtc_error_url']));
+      $rows[] = array(
+        drupal_render($form[$key]['rtc_url']),
+        drupal_render($form[$key]['rtc_error_url'])
+      );
     }
   }
+
   return theme('table', array('header' => $headers, 'rows' => $rows));
 }
 
-function _amp_rtc_urls_form_submit(&$form, &$form_state) {
+function _amp_dfp_rtc_urls_form_submit(&$form, &$form_state) {
   $form_state['rtc_config'] = $form_state['input']['rtc_config'];
-  $form_state['num_urls'] ++;
+  $form_state['num_urls']++;
   $form_state['rebuild'] = TRUE;
 }
 
-function _amp_rtc_urls_form_elements_callback(&$form, &$form_state) {
+function _amp_dfp_rtc_urls_form_elements_callback(&$form, &$form_state) {
   /* Load in previous urls. */
   $urls = count($form['rtc_config']['wrapper']['vendor'][$form_state['input']['vendor_key']]['macros']);
   for ($i = 0; $i < $urls; $i++) {

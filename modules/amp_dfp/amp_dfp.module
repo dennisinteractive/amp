@@ -1,6 +1,6 @@
 <?php
 
-include_once 'includes/amp_rtc_config.admin.inc';
+include_once 'includes/amp_dfp_rtc/amp_dfp_rtc_config.inc';
 include_once 'includes/RealTimeConfiguration.php';
 
 /**
@@ -37,11 +37,11 @@ function amp_dfp_theme($existing, $type, $theme, $path) {
     ),
     'rtc_macro_settings' => array(
       'render element' => 'form',
-      'file' => 'includes/amp_rtc_config.admin.inc',
+      'file' => 'includes/amp_dfp_rtc/amp_dfp_rtc_config.inc',
     ),
     'rtc_url_settings' => array(
       'render element' => 'form',
-      'file' => 'includes/amp_rtc_config.admin.inc',
+      'file' => 'includes/amp_dfp_rtc/amp_dfp_rtc_config.inc',
     ),
   );
 
@@ -53,6 +53,7 @@ function amp_dfp_theme($existing, $type, $theme, $path) {
  *
  * @params
  *   $variables The theme variables.
+ *
  * @return
  *   The passed-in element with the js library necessary for the amp-ad
  *   element added to head.
@@ -96,13 +97,17 @@ function amp_dfp_preprocess_amp_dfp_tag(&$variables) {
   if (empty($size)) {
     // Provide a default if there is a problem, so validation does not break.
     $variables['width'] = $variables['height'] = 1;
-  } else {
+  }
+  else {
     $variables['width'] = $size['width'];
     $variables['height'] = $size['height'];
   }
 
   $tag = _dfp_prepare_adunit($variables['tag']);
-  $tag->adunit = dfp_token_replace('[dfp_tag:network_id]/' . $tag->adunit, $tag, array('sanitize' => TRUE, 'clear' => TRUE));
+  $tag->adunit = dfp_token_replace('[dfp_tag:network_id]/' . $tag->adunit, $tag, array(
+    'sanitize' => TRUE,
+    'clear' => TRUE
+  ));
 
   // We add global targeting to each dfp tag to simplify implementation.
   $global_targeting = variable_get('dfp_targeting', array());
@@ -121,12 +126,18 @@ function amp_dfp_preprocess_amp_dfp_tag(&$variables) {
   // Prepare targeting arrays for JSON formatting
   $targeting = array();
   foreach ($tag->targeting as $target) {
-    $targeting[$target['target']] = dfp_token_replace($target['value'], $tag, array('sanitize' => TRUE, 'clear' => TRUE));
+    $targeting[$target['target']] = dfp_token_replace($target['value'], $tag, array(
+      'sanitize' => TRUE,
+      'clear' => TRUE
+    ));
   }
 
   $global_targeting = array();
   foreach ($tag->global_targeting as $target) {
-    $global_targeting[$target['target']] = dfp_token_replace($target['value'], $tag, array('sanitize' => TRUE, 'clear' => TRUE));
+    $global_targeting[$target['target']] = dfp_token_replace($target['value'], $tag, array(
+      'sanitize' => TRUE,
+      'clear' => TRUE
+    ));
   }
 
   // Give preference to tag specific targeting values
@@ -135,12 +146,12 @@ function amp_dfp_preprocess_amp_dfp_tag(&$variables) {
   $to_json = array('targeting' => $targeting);
   $variables['amp_ad_json'] = drupal_json_encode($to_json);
   $variables['rtc_config'] = '';
-  if(isset($tag->settings['rtc_config']) && !is_null($tag->settings['rtc_config']['timeout'])) {
+  if (isset($tag->settings['rtc_config']) && !is_null($tag->settings['rtc_config']['timeout'])) {
     $rtc_config = new RealTimeConfiguration(
-        $tag->settings['rtc_config']['vendor'],
-        $tag->settings['rtc_config']['urls'],
-        $tag->settings['rtc_config']['timeout']
-      );
+      $tag->settings['rtc_config']['vendor'],
+      $tag->settings['rtc_config']['urls'],
+      $tag->settings['rtc_config']['timeout']
+    );
 
     $variables['rtc_config'] = drupal_json_encode($rtc_config->jsonSerialize());
   }
@@ -158,7 +169,14 @@ function amp_dfp_form_ctools_export_ui_edit_item_form_alter(&$form, &$form_state
   if ($form_state['plugin']['schema'] == 'dfp_tags') {
     $tag = ($form_state['op'] == 'add' ? $form_state['item'] : $form_state['item']->raw);
 
-    $options = array('fill', 'fixed', 'fixed-height', 'flex-item', 'nodisplay', 'responsive');
+    $options = array(
+      'fill',
+      'fixed',
+      'fixed-height',
+      'flex-item',
+      'nodisplay',
+      'responsive'
+    );
     $form['tag_settings']['amp_layout'] = array(
       '#type' => 'select',
       '#title' => t('AMP Layout'),
@@ -182,7 +200,7 @@ function amp_dfp_form_ctools_export_ui_edit_item_form_alter(&$form, &$form_state
       '#default_value' => isset($tag->settings['amp_sticky']) ? $tag->settings['amp_sticky'] : 0,
     );
 
-    _amp_rtc_configuration_form($form, $form_state, $tag);
+    _amp_dfp_rtc_configuration_form($form, $form_state, $tag);
 
     $form['#validate'][] = 'amp_dfp_ctools_export_ui_edit_item_form_validate';
     array_unshift($form['#submit'], 'amp_dfp_ctools_export_ui_edit_item_form_submit');
@@ -233,6 +251,7 @@ function _amp_dfp_get_pixel_sizes($size) {
       'height' => $match[2],
     );
   }
+
   return FALSE;
 }
 
@@ -242,9 +261,11 @@ function _amp_dfp_get_pixel_sizes($size) {
 function _amp_dfp_get_amp_size($tag) {
   if (!empty($tag->settings['amp_size'])) {
     return _amp_dfp_get_pixel_sizes($tag->settings['amp_size']);
-  } else {
+  }
+  else {
     // Grab the lowest resolution from the DFP size property
     $lowest = _amp_dfp_get_lowest_resolution($tag->size);
+
     return _amp_dfp_get_pixel_sizes($lowest);
   }
 }
@@ -258,11 +279,13 @@ function _amp_dfp_get_amp_size($tag) {
  */
 function _amp_dfp_get_lowest_resolution($sizes) {
   $resolutions = explode(',', $sizes);
+
   return array_reduce($resolutions, '_amp_dfp_size_reduce_callback');
 }
 
 /**
  * Callback for the array_reduced used to determine lowest resolution.
+ *
  * @see _amp_dfp_get_lowest_resolution().
  */
 function _amp_dfp_size_reduce_callback($carry, $item) {
@@ -285,6 +308,7 @@ function _amp_dfp_size_reduce_callback($carry, $item) {
 function amp_dfp_tag($machinename) {
   $render_array = dfp_tag($machinename);
   $render_array['dfp_wrapper']['tag']['#theme'] = 'amp_dfp_tag';
+
   return $render_array;
 }
 

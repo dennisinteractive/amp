@@ -1,6 +1,6 @@
 <?php
 /**
- * @file
+ * @file Serializes the object to a value that can be serialized natively by json_encode().
  */
 
 /**
@@ -18,31 +18,8 @@ class RealTimeConfiguration implements JsonSerializable {
   }
 
   /**
-   *
-   * @return $this->vendors
-   */
-  public function vendors() {
-    return $this->vendors;
-  }
-
-  /**
-   *
-   * @return $this->urls
-   */
-  public function urls() {
-    return $this->urls;
-  }
-
-  /**
-   *
-   * @return $this->timeout
-   */
-  public function timeout() {
-    return $this->timeout;
-  }
-
-  /**
-   *
+   * formats the vendor elements to match the expected rtc output.
+   * 
    * @param type $vendors
    *
    * @return type array
@@ -57,7 +34,8 @@ class RealTimeConfiguration implements JsonSerializable {
   }
 
   /**
-   *
+   * formats the macros into the required format to be used in the vendor array.
+   * 
    * @param type $macros
    *
    * @return type array
@@ -72,7 +50,8 @@ class RealTimeConfiguration implements JsonSerializable {
   }
 
   /**
-   *
+   * formats the urls elements, to match expected rtc output.
+   * 
    * @param type $urls
    *
    * @return type array

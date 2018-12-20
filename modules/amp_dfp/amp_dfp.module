@@ -150,7 +150,7 @@ function amp_dfp_preprocess_amp_dfp_tag(&$variables) {
       $tag->settings['rtc_config']['timeout']
     );
 
-    $variables['rtc_config'] = drupal_json_encode($rtc_config->jsonSerialize());
+    $variables['rtc_config'] = drupal_json_encode($rtc_config);
   }
 
   _amp_dfp_headers($variables);

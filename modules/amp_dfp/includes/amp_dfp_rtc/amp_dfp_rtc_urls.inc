@@ -1,10 +1,11 @@
 <?php
 /**
- * @file todo
+ * @file real time configuration helper file to break out the form components, this file deals
+ * with the url element of the form.
  */
 
 /**
- * todo
+ * function to build the urls section of the form.
  *
  * @param $form
  * @param $form_state
@@ -66,6 +67,8 @@ function _amp_dfp_rtc_build_urls(&$form, &$form_state, $tag) {
 
 /**
  * Theme function for the "url" form.
+ * 
+ * @param type $variables
  */
 function theme_rtc_url_settings($variables) {
   $form = $variables['form'];
@@ -84,14 +87,27 @@ function theme_rtc_url_settings($variables) {
   return theme('table', array('header' => $headers, 'rows' => $rows));
 }
 
+/**
+ * Ajax Submit handler to add another url.
+ * 
+ * @param type $form
+ * @param type $form_state
+ */
 function _amp_dfp_rtc_urls_form_submit(&$form, &$form_state) {
   $form_state['rtc_config'] = $form_state['input']['rtc_config'];
   $form_state['num_urls']++;
   $form_state['rebuild'] = TRUE;
 }
 
+/**
+ * Ajax callback to add another url.
+ * 
+ * @param type $form
+ * @param type $form_state
+ * @return url table
+ */
 function _amp_dfp_rtc_urls_form_elements_callback(&$form, &$form_state) {
-  /* Load in previous urls. */
+  // Load in previous urls.
   $urls = count($form['rtc_config']['wrapper']['vendor'][$form_state['input']['vendor_key']]['macros']);
   for ($i = 0; $i < $urls; $i++) {
     if (isset($form_state['input']['rtc_config']['urls']['url_wrapper'][$i]['rtc_url']) && !empty($form_state['input']['rtc_config']['urls']['url_wrapper'][$i]['rtc_url'])) {

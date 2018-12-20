@@ -1,10 +1,11 @@
 <?php
 /**
- * @file todo
+ * @file real time configuration helper file to break out the form components, this file deals
+ * with the macro element, within the vendor section of the form
  */
 
 /**
- * todo
+ * function to build the macro section of the form.
  *
  * @param $form
  * @param $form_state
@@ -98,7 +99,7 @@ function theme_rtc_macro_settings($variables) {
 }
 
 /**
- * todo
+ * Submit handler for adding another macro.
  *
  * @param $form
  * @param $form_state
@@ -110,16 +111,16 @@ function _amp_dfp_rtc_macro_form_submit(&$form, &$form_state) {
 }
 
 /**
- * todo
+ * Ajax callback for adding more macros to the vendor.
  *
  * @param $form
  * @param $form_state
  *
- * @return mixed
+ * @return next macro
  */
 function _amp_dfp_rtc_macro_form_elements_callback(&$form, &$form_state) {
   $form_state['rtc_config'] = $form_state['input']['rtc_config'];
-  /* Load in previous macros. */
+  // Load in previous macros.
   $macros = count($form['rtc_config']['wrapper']['vendor'][$form_state['input']['vendor_key']]['macros']);
   for ($i = 0; $i < $macros; $i++) {
     if (isset($form_state['input']['rtc_config']['wrapper']['vendor'][$form_state['input']['vendor_key']]['macros'][$i]) && !empty($form_state['input']['rtc_config']['wrapper']['vendor'][$form_state['input']['vendor_key']]['macros'][$i]['macro'])) {

@@ -1,11 +1,12 @@
 <?php
 /**
- * @file todo
+ * @file real time configuration helper file to break out the form components, this file deals
+ * with the timeout element of the form.
  *
  */
 
 /**
- * todo
+ * function to build the timeout section of the form.
  *
  * @param $form
  * @param $form_state

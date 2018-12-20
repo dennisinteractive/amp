@@ -1,10 +1,11 @@
 <?php
 /**
- * @file todo
+ * @file real time configuration helper file to break out the form components, this file deals
+ * with the vendor element of the form
  */
 
 /**
- * todo
+ * function to build the vendor section of the form.
  *
  * @param $form
  * @param $form_state
@@ -54,7 +55,7 @@ function _amp_dfp_rtc_build_vendors(&$form, &$form_state, $tag) {
     );
 
     // Build Macros.
-    module_load_include('inc', 'amp_dfp', 'includes/amp_dfp_rtc/amp_dfp_rtc_macros');
+    form_load_include($form_state, 'inc', 'amp_dfp', 'includes/amp_dfp_rtc/amp_dfp_rtc_macros');
     _amp_dfp_rtc_build_macros($form, $form_state, $i, $tag);
 
   }
@@ -80,6 +81,12 @@ function _amp_dfp_rtc_build_vendors(&$form, &$form_state, $tag) {
   );
 }
 
+/**
+ * Submit handler for ajax updates to the form.
+ * 
+ * @param type $form
+ * @param type $form_state
+ */
 function _amp_dfp_rtc_vendor_form_submit(&$form, &$form_state) {
   $form_state['rtc_config'] = $form_state['values']['rtc_config'];
   $form_state['num_vendors']++;
@@ -87,6 +94,13 @@ function _amp_dfp_rtc_vendor_form_submit(&$form, &$form_state) {
   $form_state['rebuild'] = TRUE;
 }
 
+/**
+ * ajax callback for adding another vendor.
+ * 
+ * @param type $form
+ * @param type $form_state
+ * @return type vendor
+ */
 function _amp_dfp_rtc_vendor_form_elements_callback(&$form, &$form_state) {
   $key = $form_state['input']['vendor_key'] + 1;
 

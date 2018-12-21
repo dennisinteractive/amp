@@ -1,16 +1,24 @@
 <?php
+
 /**
  * @file Serializes the object to a value that can be serialized natively by json_encode().
  */
 
 /**
- *  Implements JsonSerializable Interface
+ * Implements JsonSerializable Interface.
  */
 class RealTimeConfiguration implements JsonSerializable {
   private $vendors;
   private $urls;
   private $timeout;
-
+  
+  /**
+   * Constructor, take params & formats them.
+   * 
+   * @param type $vendors
+   * @param type $urls
+   * @param type $timeout
+   */
   public function __construct($vendors, $urls, $timeout) {
     $this->vendors = $this->formatVendor($vendors);
     $this->urls = $this->formatUrls($urls);
@@ -18,9 +26,9 @@ class RealTimeConfiguration implements JsonSerializable {
   }
 
   /**
-   * formats the vendor elements to match the expected rtc output.
-   * 
-   * @param type $vendors
+   * Formats the vendor elements to match the expected rtc output.
+   *
+   * @param mixed $vendors
    *
    * @return type array
    */
@@ -34,9 +42,9 @@ class RealTimeConfiguration implements JsonSerializable {
   }
 
   /**
-   * formats the macros into the required format to be used in the vendor array.
-   * 
-   * @param type $macros
+   * Formats the macros into the required format to be used in the vendor array.
+   *
+   * @param mixed $macros
    *
    * @return type array
    */
@@ -50,9 +58,9 @@ class RealTimeConfiguration implements JsonSerializable {
   }
 
   /**
-   * formats the urls elements, to match expected rtc output.
-   * 
-   * @param type $urls
+   * Formats the urls elements, to match expected rtc output.
+   *
+   * @param mixed $urls
    *
    * @return type array
    */
@@ -84,4 +92,5 @@ class RealTimeConfiguration implements JsonSerializable {
       'timeoutMillis' => $this->timeout,
     );
   }
+
 }

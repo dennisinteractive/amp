@@ -1,16 +1,22 @@
 <?php
+
 /**
- * @file real time configuration helper file to break out the form components, this file deals
- * with the macro element, within the vendor section of the form
+ * @file
+ * Real time configuration helper file to break out the form components.
+ * This file deals with the macro element, in the vendor section of the form.
  */
 
 /**
- * function to build the macro section of the form.
+ * Function to build the macro section of the form.
  *
- * @param $form
- * @param $form_state
- * @param $vendor_key
- * @param $tag
+ * @param mixed $form
+ *   The form.
+ * @param mixed $form_state
+ *   The form state.
+ * @param mixed $vendor_key
+ *   The id for the vendor.
+ * @param mixed $tag
+ *   The dfp tag object.
  */
 function _amp_dfp_rtc_build_macros(&$form, &$form_state, $vendor_key, $tag) {
   $form['rtc_config']['wrapper']['vendor'][$vendor_key]['macros'] = array(
@@ -24,7 +30,7 @@ function _amp_dfp_rtc_build_macros(&$form, &$form_state, $vendor_key, $tag) {
       'wrapper',
       'vendor',
       $vendor_key,
-      'macros'
+      'macros',
     ),
   );
 
@@ -43,7 +49,7 @@ function _amp_dfp_rtc_build_macros(&$form, &$form_state, $vendor_key, $tag) {
         $vendor_key,
         'macros',
         $j,
-        'macro'
+        'macro',
       ),
     );
     $form['rtc_config']['wrapper']['vendor'][$vendor_key]['macros'][$j]['value'] = array(
@@ -56,7 +62,7 @@ function _amp_dfp_rtc_build_macros(&$form, &$form_state, $vendor_key, $tag) {
         $vendor_key,
         'macros',
         $j,
-        'value'
+        'value',
       ),
     );
   }
@@ -79,7 +85,8 @@ function _amp_dfp_rtc_build_macros(&$form, &$form_state, $vendor_key, $tag) {
 /**
  * Theme function for the "macro" form.
  *
- * @param $variables
+ * @param mixed $variables
+ *   The variables array.
  */
 function theme_rtc_macro_settings($variables) {
   $form = $variables['form'];
@@ -90,7 +97,7 @@ function theme_rtc_macro_settings($variables) {
     if (is_numeric($key) && !empty($form[$key]['macro'])) {
       $rows[] = array(
         drupal_render($form[$key]['macro']),
-        drupal_render($form[$key]['value'])
+        drupal_render($form[$key]['value']),
       );
     }
   }
@@ -101,8 +108,10 @@ function theme_rtc_macro_settings($variables) {
 /**
  * Submit handler for adding another macro.
  *
- * @param $form
- * @param $form_state
+ * @param mixed $form
+ *   The form.
+ * @param mixed $form_state
+ *   The form state.
  */
 function _amp_dfp_rtc_macro_form_submit(&$form, &$form_state) {
   $form_state['rtc_config'] = $form_state['input']['rtc_config'];
@@ -113,10 +122,13 @@ function _amp_dfp_rtc_macro_form_submit(&$form, &$form_state) {
 /**
  * Ajax callback for adding more macros to the vendor.
  *
- * @param $form
- * @param $form_state
+ * @param mixed $form
+ *   The form.
+ * @param mixed $form_state
+ *   The form state.
  *
- * @return next macro
+ * @return mixed
+ *   Next macro.
  */
 function _amp_dfp_rtc_macro_form_elements_callback(&$form, &$form_state) {
   $form_state['rtc_config'] = $form_state['input']['rtc_config'];

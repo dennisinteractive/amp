@@ -1,4 +1,5 @@
 <?php
+
 /**
  * @file
  * Template for an amp-dfp-tag.
@@ -10,7 +11,7 @@
  * - slot: The DFP ad slot string.
  * - amp_ad_json: Other settings, such as targeting, encoded in json.
  * - sticky: If the tag is sticky.
- * - tag: The full Drupal DFP tag object
+ * - tag: The full Drupal DFP tag object.
  *
  * @see template_preprocess_amp_ad()
  */

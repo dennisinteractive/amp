@@ -1,15 +1,20 @@
 <?php
+
 /**
- * @file real time configuration helper file to break out the form components, this file deals
- * with the vendor element of the form
+ * @file
+ * Real time configuration helper file to break out the form components.
+ * This file deals with the vendor element of the form.
  */
 
 /**
- * function to build the vendor section of the form.
+ * Function to build the vendor section of the form.
  *
- * @param $form
- * @param $form_state
- * @param $tag
+ * @param mixed $form
+ *   The form.
+ * @param mixed $form_state
+ *   The form state.
+ * @param mixed $tag
+ *   The dfp tag object.
  */
 function _amp_dfp_rtc_build_vendors(&$form, &$form_state, $tag) {
   if (empty($form_state['num_vendors'])) {
@@ -32,9 +37,16 @@ function _amp_dfp_rtc_build_vendors(&$form, &$form_state, $tag) {
       $form_state['num_macros'][$i] = 1;
     }
 
+    $vendor_title = 'Vendor';
+    $vendor_name = '';
+    if (isset($tag->settings['rtc_config']['vendor'][$i]['vendor_name'])) {
+      $vendor_title = 'Vendor: ' . $tag->settings['rtc_config']['vendor'][$i]['vendor_name'];
+      $vendor_name = $tag->settings['rtc_config']['vendor'][$i]['vendor_name'];
+    }
+
     $form['rtc_config']['wrapper']['vendor'][$i] = array(
       '#type' => 'fieldset',
-      '#title' => isset($tag->settings['rtc_config']['vendor'][$i]['vendor_name']) ? t('Vendor: ' . $tag->settings['rtc_config']['vendor'][$i]['vendor_name']) : t('Vendor'),
+      '#title' => t($vendor_title),
       '#tree' => TRUE,
       '#collapsible' => TRUE,
       '#parents' => array('rtc_config', 'wrapper', 'vendor'),
@@ -45,13 +57,13 @@ function _amp_dfp_rtc_build_vendors(&$form, &$form_state, $tag) {
       '#title' => t('Vendor name'),
       '#description' => t('Vendor name.'),
       '#parents' => array('rtc_config', 'wrapper', 'vendor', $i, 'vendor_name'),
-      '#value' => isset($tag->settings['rtc_config']['vendor'][$i]['vendor_name']) ? $tag->settings['rtc_config']['vendor'][$i]['vendor_name'] : '',
+      '#value' => t($vendor_name),
     );
 
     $form['rtc_config']['wrapper']['vendor'][$i]['vendor_key'] = array(
       '#type' => 'hidden',
       '#value' => $i,
-      '#name' => 'vendor_key'
+      '#name' => 'vendor_key',
     );
 
     // Build Macros.
@@ -83,9 +95,11 @@ function _amp_dfp_rtc_build_vendors(&$form, &$form_state, $tag) {
 
 /**
  * Submit handler for ajax updates to the form.
- * 
- * @param type $form
- * @param type $form_state
+ *
+ * @param mixed $form
+ *   The form.
+ * @param mixed $form_state
+ *   The form state.
  */
 function _amp_dfp_rtc_vendor_form_submit(&$form, &$form_state) {
   $form_state['rtc_config'] = $form_state['values']['rtc_config'];
@@ -95,11 +109,15 @@ function _amp_dfp_rtc_vendor_form_submit(&$form, &$form_state) {
 }
 
 /**
- * ajax callback for adding another vendor.
- * 
- * @param type $form
- * @param type $form_state
- * @return type vendor
+ * Ajax callback for adding another vendor.
+ *
+ * @param mixed $form
+ *   The form.
+ * @param mixed $form_state
+ *   The form state.
+ *
+ * @return mixed
+ *   The next vendor fieldset.
  */
 function _amp_dfp_rtc_vendor_form_elements_callback(&$form, &$form_state) {
   $key = $form_state['input']['vendor_key'] + 1;

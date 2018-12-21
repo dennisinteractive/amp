@@ -1,15 +1,20 @@
 <?php
+
 /**
- * @file real time configuration helper file to break out the form components, this file deals
- * with the url element of the form.
+ * @file
+ * Real time configuration helper file to break out the form components.
+ * This file deals with the url element of the form.
  */
 
 /**
- * function to build the urls section of the form.
+ * Function to build the urls section of the form.
  *
- * @param $form
- * @param $form_state
- * @param $tag
+ * @param mixed $form
+ *   The form.
+ * @param mixed $form_state
+ *   The current form state.
+ * @param mixed $tag
+ *   The dfp tag.
  */
 function _amp_dfp_rtc_build_urls(&$form, &$form_state, $tag) {
   $form['rtc_config']['urls'] = array(
@@ -27,7 +32,7 @@ function _amp_dfp_rtc_build_urls(&$form, &$form_state, $tag) {
     '#type' => 'markup',
     '#prefix' => '<div id="rtc-url-wrapper">',
     '#sufix' => '</div>',
-    '#theme' => 'rtc_url_settings'
+    '#theme' => 'rtc_url_settings',
   );
 
   if (isset($tag->settings['rtc_config']['urls']) && count($tag->settings['rtc_config']['urls']) > $form_state['num_urls']) {
@@ -67,8 +72,9 @@ function _amp_dfp_rtc_build_urls(&$form, &$form_state, $tag) {
 
 /**
  * Theme function for the "url" form.
- * 
- * @param type $variables
+ *
+ * @param mixed $variables
+ *   Drupal variables.
  */
 function theme_rtc_url_settings($variables) {
   $form = $variables['form'];
@@ -79,7 +85,7 @@ function theme_rtc_url_settings($variables) {
     if (is_numeric($key) && !empty($form[$key]['rtc_url'])) {
       $rows[] = array(
         drupal_render($form[$key]['rtc_url']),
-        drupal_render($form[$key]['rtc_error_url'])
+        drupal_render($form[$key]['rtc_error_url']),
       );
     }
   }
@@ -89,9 +95,11 @@ function theme_rtc_url_settings($variables) {
 
 /**
  * Ajax Submit handler to add another url.
- * 
- * @param type $form
- * @param type $form_state
+ *
+ * @param mixed $form
+ *   The form.
+ * @param mixed $form_state
+ *   The current form state.
  */
 function _amp_dfp_rtc_urls_form_submit(&$form, &$form_state) {
   $form_state['rtc_config'] = $form_state['input']['rtc_config'];
@@ -101,10 +109,14 @@ function _amp_dfp_rtc_urls_form_submit(&$form, &$form_state) {
 
 /**
  * Ajax callback to add another url.
- * 
- * @param type $form
- * @param type $form_state
- * @return url table
+ *
+ * @param mixed $form
+ *   The form.
+ * @param mixed $form_state
+ *   The form state.
+ *
+ * @return mixed
+ *   The complete url table element.
  */
 function _amp_dfp_rtc_urls_form_elements_callback(&$form, &$form_state) {
   // Load in previous urls.

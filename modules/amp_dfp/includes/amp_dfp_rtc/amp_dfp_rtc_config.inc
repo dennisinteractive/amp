@@ -1,14 +1,20 @@
 <?php
+
 /**
- * @file Main file for providing real time configuration functionality for amp-ad elements
+ * @file
+ * Main file for providing real time configuration functionality.
+ * This include allows rtc-config for amp-ad elements.
  */
 
 /**
  * RTC form to pull in the main elements of the rtc form.
  *
- * @param $form
- * @param $form_state
- * @param $tag
+ * @param mixed $form
+ *   The form.
+ * @param mixed $form_state
+ *   The forms current state.
+ * @param mixed $tag
+ *   The current ad tag.
  */
 function _amp_dfp_rtc_configuration_form(&$form, &$form_state, $tag) {
   $form['rtc_config'] = array(
@@ -39,8 +45,10 @@ function _amp_dfp_rtc_configuration_form(&$form, &$form_state, $tag) {
 /**
  * Submit handler for the rtc elements of the form.
  *
- * @param $form
- * @param $form_state
+ * @param mixed $form
+ *   The form.
+ * @param mixed $form_state
+ *   The forms current state.
  */
 function _amp_dfp_rtc_config_submit(&$form, &$form_state) {
   $rtc_config['vendor'] = $form_state['input']['rtc_config']['wrapper']['vendor'];

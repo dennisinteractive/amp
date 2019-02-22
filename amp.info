@@ -9,3 +9,4 @@ test_dependencies[] = amptheme:amptheme
 test_dependencies[] = media:media
 files[] = tests/amp.test
 files[] = tests/amp_node.test
+files[] = tests/amp_media.test

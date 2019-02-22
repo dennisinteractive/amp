@@ -289,17 +289,22 @@ function amp_is_amp_request() {
 
     // The current request must have '?amp' in the query string.
     if (isset($_GET['amp'])) {
-      // Ensure that there is a node loaded from the current request, and that
+      // Ensure we are on a node path for the current request, and that
       // it is a node type which has the AMP view mode enabled.
-      $node = menu_get_object();
-      if ($node && in_array($node->type, amp_get_enabled_types())) {
+      // We can't use menu_get_object() or node_load() because this can reset
+      // the theme to default if other objects are loaded in the node.
+      if (arg(0) == 'node' && is_numeric(arg(1))) {
+        $node_id = arg(1);
+        $node_type = amp_get_nid_type($node_id);
+      }
+
+      if (isset($node_id) && isset($node_type) && in_array($node_type, amp_get_enabled_types())) {
         // Node level check.
-        if (amp_node_is_enabled($node->nid)) {
+        if (amp_node_is_enabled($node_id)) {
           // Do an additional check to ensure the current path is actually the
           // node's public URI. Without this check, this function would return
           // TRUE on the node's edit form.
-          $uri = entity_uri('node', $node);
-          if ($uri['path'] == current_path()) {
+          if ('node/' . $node_id == current_path()) {
             // Only if all of the above conditions are true is this a valid AMP
             // request.
             $result = TRUE;
@@ -314,6 +319,32 @@ function amp_is_amp_request() {
   }
 
   return $result;
+}
+
+/**
+ * Returns the node type given an $nid.
+ *
+ * @param $nid
+ *
+ * @return mixed
+ *  The node type
+ */
+function amp_get_nid_type($nid) {
+  $cid = 'amp_nid_type:' . $nid;
+  if ($cache = cache_get($cid)) {
+    $type = $cache->data;
+  }
+  else {
+    $query = db_select('node', 'n')
+      ->fields('n', ['type'])
+      ->condition('n.nid', $nid)
+      ->execute();
+    $result = $query->fetchObject();
+    $type = $result->type;
+    cache_set($cid, $type, 'cache');
+  }
+
+  return $type;
 }
 
 /**

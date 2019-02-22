@@ -1,0 +1,88 @@
+<?php
+
+/**
+ * @file
+ * Tests for media on AMP pages.
+ */
+
+/**
+ * Tests media elements on AMP pages.
+ */
+class AmpMediaTestCase extends MediaFileFieldTestCase {
+  protected $adminUser;
+
+  /**
+   * @return array
+   */
+  public static function getInfo() {
+    return array(
+      'name' => 'AMP media',
+      'description' => 'Tests media in the body field of an AMP page.',
+      'group' => 'AMP',
+    );
+  }
+
+  /**
+   * @return bool|void
+   */
+  function setUp() {
+    parent::setUp(array('amp', 'media_wysiwyg'));
+    theme_enable(array('ampsubtheme_example'));
+
+    // Create Admin user.
+    $this->adminUser = $this->drupalCreateUser(
+      array(
+        'administer content types',
+        'administer nodes',
+        'edit any article content',
+        'administer fields',
+        'administer filters',
+      )
+    );
+  }
+
+  /**
+   * Test the AMP theme is used.
+   */
+  public function testAmpMedia() {
+    // Login as an admin user.
+    $this->drupalLogin($this->adminUser);
+
+    // Enable AMP display on article content.
+    $this->drupalGet("admin/structure/types/manage/article/display");
+    $this->assertResponse(200);
+    $edit = ["view_modes_custom[amp]" => '1'];
+    $this->drupalPost(NULL, $edit, t('Save'));
+
+    // Enable "Convert Media tags to markup" filter.
+    $this->drupalGet("admin/config/content/formats/filtered_html");
+    $this->assertResponse(200);
+    $edit = ["filters[media_filter][status]" => '1'];
+    $this->drupalPost(NULL, $edit, t('Save configuration'));
+
+    // Create a test file.
+    $mediaFileTest = new MediaFileFieldTestCase();
+    $test_file = $mediaFileTest->getTestFile('text');
+    $test_file->uid = $this->adminUser->uid;
+    $test_file = file_save($test_file);
+
+    // Create a node to test AMP metadata.
+    $node = $this->drupalCreateNode(array('type' => 'article'));
+
+    // Edit the node and add media to the body.
+    $this->drupalGet('node/' . $node->nid . '/edit');
+    $this->assertResponse(200);
+    $edit = ["body[und][0][value]" => '[[{"fid":"' . $test_file->fid . '","view_mode":"default","fields":{"format":"default","alignment":""},"link_text":"test.txt","type":"media","field_deltas":{"401":{"format":"default","alignment":""}}}]]'];
+    $this->drupalPost(NULL, $edit, t('Save and view AMP page'));
+
+    // Check the initial page load is an AMP page.
+    $this->assertResponse(200);
+    $this->assertRaw('<html amp');
+
+    // Load the page again and check it's an AMP page.
+    $this->drupalGet('node/' . $node->nid, array('query' => array('amp' => '')));
+    $this->assertResponse(200);
+    $this->assertRaw('<html amp');
+  }
+
+}

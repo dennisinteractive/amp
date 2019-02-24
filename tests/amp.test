@@ -29,6 +29,9 @@ class AmpTestCase extends DrupalWebTestCase {
         'administer content types',
         'administer fields',
         'administer site configuration',
+        'access administration pages',
+        'view the administration theme',
+        'administer themes',
       )
     );
     $this->drupalLogin($this->admin_user);

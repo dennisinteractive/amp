@@ -27,6 +27,7 @@ class AmpMediaTestCase extends MediaFileFieldTestCase {
    */
   function setUp() {
     parent::setUp(array('amp', 'media', 'media_wysiwyg'));
+
     theme_enable(array('ampsubtheme_example'));
 
     // Create Admin user.

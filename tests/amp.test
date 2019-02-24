@@ -28,6 +28,7 @@ class AmpTestCase extends DrupalWebTestCase {
     $this->admin_user = $this->drupalCreateUser(array(
         'administer content types',
         'administer fields',
+        'administer site configuration',
       )
     );
     $this->drupalLogin($this->admin_user);
@@ -72,6 +73,8 @@ class AmpTestCase extends DrupalWebTestCase {
       "fields[body][type]" => 'amp_text',
     ];
     $this->drupalPost(NULL, $edit, t('Save'));
+
+    $this->get('admin/appearance');
 
     // Check the warnfix messages.
     $this->drupalGet('node/' . $node->nid, array('query' => array('amp' => NULL, 'warnfix' => NULL)));
